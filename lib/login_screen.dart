@@ -1,3 +1,4 @@
+import 'package:flutter_app/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'register_screen.dart';
@@ -24,7 +25,11 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      // Navigation to HomeScreen is handled by StreamBuilder in main.dart.
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message;
       switch (e.code) {
@@ -36,7 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
           message = 'La cuenta de usuario ha sido deshabilitada';
           break;
         case 'too-many-requests':
-          message = 'Demasiados intentos. Por favor, intenta de nuevo más tarde.';
+          message =
+              'Demasiados intentos. Por favor, intenta de nuevo más tarde.';
           break;
         case 'network-request-failed':
           message = 'Error de red. Por favor, verifica tu conexión a internet.';
@@ -44,11 +50,11 @@ class _LoginScreenState extends State<LoginScreen> {
         default:
           message = 'Error al iniciar sesión. Por favor, intenta de nuevo.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
     }
   }
 
