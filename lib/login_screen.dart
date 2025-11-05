@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'register_screen.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,15 +24,29 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+      // Navigation to HomeScreen is handled by StreamBuilder in main.dart.
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'user-not-found':
+        case 'wrong-password':
+          message = 'El correo o la contraseña son incorrectos';
+          break;
+        case 'user-disabled':
+          message = 'La cuenta de usuario ha sido deshabilitada';
+          break;
+        case 'too-many-requests':
+          message = 'Demasiados intentos. Por favor, intenta de nuevo más tarde.';
+          break;
+        case 'network-request-failed':
+          message = 'Error de red. Por favor, verifica tu conexión a internet.';
+          break;
+        default:
+          message = 'Error al iniciar sesión. Por favor, intenta de nuevo.';
       }
-    } on FirebaseAuthException {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El correo o la contraseña son incorrectos'),
+        SnackBar(
+          content: Text(message),
         ),
       );
     }
