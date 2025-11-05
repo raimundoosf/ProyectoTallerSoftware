@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-import 'profile_creation_screen.dart';
+import 'profile_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -43,9 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const ProfileCreationScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const ProfileScreen()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -85,7 +82,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return 'Por favor ingrese su correo electrónico';
                     }
                     // Simple email regex pattern
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    final emailRegex = RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    );
                     if (!emailRegex.hasMatch(value)) {
                       return 'Por favor ingrese un correo electrónico válido';
                     }
