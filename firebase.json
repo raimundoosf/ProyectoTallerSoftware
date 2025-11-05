@@ -1,0 +1,23 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "tallersoftware-ab7d6",
+          "appId": "1:847615561635:android:6308f478a00d08672d5416",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "tallersoftware-ab7d6",
+          "configurations": {
+            "android": "1:847615561635:android:6308f478a00d08672d5416",
+            "macos": "1:847615561635:ios:c89f2bb900c31c302d5416",
+            "web": "1:847615561635:web:b7b10dd6ab794e512d5416"
+          }
+        }
+      }
+    }
+  }
+}
