@@ -132,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error al guardar el perfil: $e')));
+      ).showSnackBar(const SnackBar(content: Text('No se pudo guardar el perfil. Por favor, intenta de nuevo.')));
     }
   }
 
@@ -279,10 +279,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: const Text('Guardar Cambios'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
+                  await _fetchUserData(); // Re-fetch to discard changes
                   setState(() {
                     _isEditing = false;
-                    _fetchUserData(); // Re-fetch to discard changes
                   });
                 },
                 child: const Text('Cancelar'),
