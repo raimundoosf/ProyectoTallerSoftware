@@ -28,7 +28,8 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Página Principal'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person),
+            icon: const Icon(Icons.person_outline),
+            tooltip: 'Perfil',
             onPressed: () async {
               if (currentUser != null) {
                 final role = await _getUserRole(currentUser.uid);
@@ -52,18 +53,36 @@ class HomeScreen extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar Sesión',
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
-                Navigator.of(context).pushReplacement(
+                Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (Route<dynamic> route) => false,
                 );
               }
             },
           ),
         ],
       ),
-      body: const Center(child: Text('¡Bienvenido! Has iniciado sesión.')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '¡Bienvenido!',
+              style: Theme.of(context).textTheme.headlineLarge,
+            ),
+            const SizedBox(height: 8),
+            if (currentUser?.email != null)
+              Text(
+                currentUser!.email!,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
