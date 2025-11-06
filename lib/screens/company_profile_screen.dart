@@ -129,8 +129,19 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
         .ref()
         .child('company_logos')
         .child('${_currentUser!.uid}.jpg');
-    await storageRef.putFile(image);
-    return await storageRef.getDownloadURL();
+    try {
+      await storageRef.putFile(image);
+      return await storageRef.getDownloadURL();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo subir el logo de la empresa.'),
+          ),
+        );
+      }
+      return '';
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -366,7 +377,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
               labelText: 'Nombre de la Empresa',
               prefixIcon: Icon(Icons.business_outlined),
             ),
-            validator: (value) => value!.isEmpty ? 'Campo requerido' : null,
+            validator: (value) => value == null || value.isEmpty ? 'Campo requerido' : null,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -414,7 +425,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
               prefixIcon: Icon(Icons.description_outlined),
             ),
             maxLines: 3,
-            validator: (value) => value!.isEmpty ? 'Campo requerido' : null,
+            validator: (value) => value == null || value.isEmpty ? 'Campo requerido' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -425,7 +436,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
             ),
             keyboardType: TextInputType.url,
             validator: (value) {
-              if (value!.isNotEmpty && !Uri.tryParse(value)!.isAbsolute) {
+              if (value != null && value.isNotEmpty && !(Uri.tryParse(value)?.isAbsolute ?? false)) {
                 return 'Ingrese una URL válida';
               }
               return null;

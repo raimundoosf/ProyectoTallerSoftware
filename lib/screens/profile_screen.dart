@@ -109,8 +109,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .ref()
         .child('user_photos')
         .child('${_currentUser!.uid}.jpg');
-    await storageRef.putFile(image);
-    return await storageRef.getDownloadURL();
+    try {
+      await storageRef.putFile(image);
+      return await storageRef.getDownloadURL();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo subir la foto de perfil.'),
+          ),
+        );
+      }
+      return '';
+    }
   }
 
   Future<void> _saveProfile() async {
