@@ -370,7 +370,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _selectedIndustry,
+            initialValue: _selectedIndustry,
             decoration: const InputDecoration(
               labelText: 'Industria',
               prefixIcon: Icon(Icons.business_center_outlined),
@@ -389,7 +389,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _selectedLocation,
+            initialValue: _selectedLocation,
             decoration: const InputDecoration(
               labelText: 'Ubicación',
               prefixIcon: Icon(Icons.location_on_outlined),
