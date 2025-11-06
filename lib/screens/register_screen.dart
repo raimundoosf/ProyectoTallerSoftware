@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'profile_screen.dart';
+import 'package:flutter_app/screens/company_profile_screen.dart';
+import 'package:flutter_app/screens/profile_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  String _selectedRole = 'Usuario';
 
   @override
   void dispose() {
@@ -36,14 +39,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
+
+      // Guardar el rol del usuario en Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({'role': _selectedRole});
+
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const ProfileScreen()),
-        );
+        if (_selectedRole == 'Usuario') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const ProfileScreen()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const CompanyProfileScreen(),
+            ),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       String message;
@@ -121,6 +140,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return 'Por favor confirme su contraseña';
                     }
                     return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  value: _selectedRole,
+                  decoration: const InputDecoration(
+                    labelText: 'Tipo de cuenta',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: <String>['Usuario', 'Empresa']
+                      .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      })
+                      .toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedRole = newValue!;
+                    });
                   },
                 ),
                 const SizedBox(height: 32.0),
