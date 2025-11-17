@@ -20,7 +20,17 @@ Este es un proyecto de aplicación móvil desarrollado en Flutter como parte del
   - Indicadores de carga para mejorar la retroalimentación al usuario.
 - **Navegación Protegida**: Flujo de autenticación que dirige a los usuarios a la pantalla principal si han iniciado sesión, o a la pantalla de login en caso contrario.
 
-## 🛠️ Tecnologías y Dependencias
+## �️ Estructura de datos en Firestore
+
+Para evitar duplicidad y mantener una separación clara de responsabilidades, la aplicación utiliza tres colecciones bien definidas:
+
+- `users`: contiene únicamente metadatos de autenticación/autorización (por ejemplo `role`, `uid` y una marca temporal). Cada documento se identifica por el UID emitido por Firebase Authentication y nunca almacena información de perfil.
+- `user_profiles`: almacena los datos completos del perfil de los usuarios estándar (nombre, foto, ubicación, intereses, etc.).
+- `companies`: persiste la información detallada de las cuentas de tipo empresa (nombre comercial, industria, certificaciones, etc.).
+
+Los formularios y repositorios del proyecto interactúan exclusivamente con la colección que corresponde a su rol, lo que simplifica las reglas de seguridad y elimina inconsistencias entre colecciones.
+
+## �🛠️ Tecnologías y Dependencias
 
 - **Framework**: [Flutter](https://flutter.dev/)
 - **Lenguaje**: [Dart](https://dart.dev/)
