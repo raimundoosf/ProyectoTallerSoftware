@@ -100,58 +100,30 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
 
         // Otherwise, show tabs
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Mi Empresa'),
-            elevation: 0,
-            bottom: viewModel.companyProfile != null
-                ? PreferredSize(
-                    preferredSize: const Size.fromHeight(48),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(20),
-                        ),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(20),
-                          ),
-                        ),
-                        labelColor: Theme.of(
-                          context,
-                        ).colorScheme.onPrimaryContainer,
-                        unselectedLabelColor: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.6),
-                        tabs: const [
-                          Tab(icon: Icon(Icons.business), text: 'Perfil'),
-                          Tab(
-                            icon: Icon(Icons.inventory_2),
-                            text: 'Publicaciones',
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : null,
-          ),
+          appBar: AppBar(title: const Text('Mi Empresa'), elevation: 0),
           body: viewModel.isLoading
               ? const Center(child: CircularProgressIndicator())
               : viewModel.companyProfile == null
               ? _buildNoProfileView(context)
-              : TabBarView(
-                  controller: _tabController,
+              : Column(
                   children: [
-                    _buildProfileView(context, viewModel),
-                    CompanyProductsListView(
-                      companyId: FirebaseAuth.instance.currentUser!.uid,
+                    // Header fijo con logo, nombre e industria
+                    _buildFixedHeader(context, viewModel),
+
+                    // Tab bar
+                    _buildTabBar(context),
+
+                    // Contenido de los tabs
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildProfileView(context, viewModel),
+                          CompanyProductsListView(
+                            companyId: FirebaseAuth.instance.currentUser!.uid,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -188,6 +160,198 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
       text: viewModel.companyDescription,
     );
     _websiteController ??= TextEditingController(text: viewModel.website);
+  }
+
+  Widget _buildFixedHeader(
+    BuildContext context,
+    CompanyProfileViewModel viewModel,
+  ) {
+    final companyProfile = viewModel.companyProfile!;
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primaryContainer,
+            theme.colorScheme.secondaryContainer.withValues(alpha: 0.8),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 32),
+          child: Column(
+            children: [
+              // Logo de la empresa
+              Hero(
+                tag: 'company-logo',
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: theme.colorScheme.surface,
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    child: Builder(
+                      builder: (context) {
+                        final imageProvider = _buildProfileImageProvider(
+                          companyProfile.logoUrl,
+                        );
+                        return CircleAvatar(
+                          key: ValueKey(companyProfile.logoUrl),
+                          radius: 64,
+                          backgroundColor: theme.colorScheme.surface,
+                          backgroundImage: imageProvider,
+                          child: imageProvider == null
+                              ? Icon(
+                                  Icons.business,
+                                  size: 64,
+                                  color: theme.colorScheme.primary,
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Nombre de la empresa
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  companyProfile.companyName,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onPrimaryContainer,
+                    fontSize: 26,
+                    letterSpacing: -0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Industria como chip mejorado
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.business_center,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      companyProfile.industry,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              theme.colorScheme.primaryContainer,
+              theme.colorScheme.primaryContainer.withValues(alpha: 0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        dividerColor: Colors.transparent,
+        labelColor: theme.colorScheme.onPrimaryContainer,
+        unselectedLabelColor: theme.colorScheme.onSurface.withValues(
+          alpha: 0.6,
+        ),
+        labelStyle: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
+        unselectedLabelStyle: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+        ),
+        padding: const EdgeInsets.all(6),
+        tabs: const [
+          Tab(icon: Icon(Icons.business, size: 24), text: 'Perfil', height: 64),
+          Tab(
+            icon: Icon(Icons.inventory_2, size: 24),
+            text: 'Publicaciones',
+            height: 64,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildNoProfileView(BuildContext context) {
@@ -253,219 +417,142 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
     final companyProfile = viewModel.companyProfile!;
     final theme = Theme.of(context);
 
-    return CustomScrollView(
-      slivers: [
-        // Header con logo y nombre
-        SliverToBoxAdapter(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.primaryContainer,
-                  theme.colorScheme.secondaryContainer,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  // Logo de la empresa
-                  Hero(
-                    tag: 'company-logo',
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.colorScheme.surface,
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        switchInCurve: Curves.easeOutBack,
-                        switchOutCurve: Curves.easeIn,
-                        child: Builder(
-                          builder: (context) {
-                            final imageProvider = _buildProfileImageProvider(
-                              companyProfile.logoUrl,
-                            );
-                            return CircleAvatar(
-                              key: ValueKey(companyProfile.logoUrl),
-                              radius: 60,
-                              backgroundColor: theme.colorScheme.surface,
-                              backgroundImage: imageProvider,
-                              child: imageProvider == null
-                                  ? Icon(
-                                      Icons.business,
-                                      size: 60,
-                                      color: theme.colorScheme.primary,
-                                    )
-                                  : null,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Nombre de la empresa
-                  Text(
-                    companyProfile.companyName,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onPrimaryContainer,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  // Industria como chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.business_center,
-                          size: 16,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          companyProfile.industry,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      children: [
+        // Descripción
+        _buildSection(
+          context,
+          title: 'Acerca de',
+          icon: Icons.info_outline,
+          child: Text(
+            companyProfile.companyDescription.isNotEmpty
+                ? companyProfile.companyDescription
+                : 'Sin descripción',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              height: 1.6,
+              fontSize: 16,
             ),
           ),
         ),
 
-        // Contenido del perfil
-        SliverPadding(
-          padding: const EdgeInsets.all(16.0),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              // Descripción
-              _buildSection(
+        const SizedBox(height: 20),
+
+        // Información de contacto
+        _buildSection(
+          context,
+          title: 'Información',
+          icon: Icons.contact_page_outlined,
+          child: Column(
+            children: [
+              _buildInfoRow(
                 context,
-                title: 'Acerca de',
-                icon: Icons.info_outline,
-                child: Text(
-                  companyProfile.companyDescription.isNotEmpty
-                      ? companyProfile.companyDescription
-                      : 'Sin descripción',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                    height: 1.5,
-                  ),
-                ),
+                icon: Icons.location_on_outlined,
+                label: 'Ubicación',
+                value: companyProfile.companyLocation,
               ),
-
-              const SizedBox(height: 16),
-
-              // Información de contacto
-              _buildSection(
+              const Divider(height: 32),
+              _buildInfoRow(
                 context,
-                title: 'Información',
-                icon: Icons.contact_page_outlined,
-                child: Column(
-                  children: [
-                    _buildInfoRow(
-                      context,
-                      icon: Icons.location_on_outlined,
-                      label: 'Ubicación',
-                      value: companyProfile.companyLocation,
+                icon: Icons.language_outlined,
+                label: 'Sitio Web',
+                value: companyProfile.website,
+                isLink: true,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // Certificaciones
+        if (companyProfile.certifications.isNotEmpty)
+          _buildSection(
+            context,
+            title: 'Certificaciones',
+            icon: Icons.verified_outlined,
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: companyProfile.certifications
+                  .map(
+                    (cert) => Chip(
+                      avatar: Icon(
+                        Icons.verified,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
+                      label: Text(cert),
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      labelStyle: TextStyle(
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                     ),
-                    const Divider(height: 24),
-                    _buildInfoRow(
-                      context,
-                      icon: Icons.language_outlined,
-                      label: 'Sitio Web',
-                      value: companyProfile.website,
-                      isLink: true,
+                  )
+                  .toList(),
+            ),
+          ),
+
+        if (companyProfile.certifications.isNotEmpty)
+          const SizedBox(height: 20),
+
+        // Botón de nueva publicación
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                theme.colorScheme.primaryContainer,
+                theme.colorScheme.secondaryContainer,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => context.go('/products/new'),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.add_circle_outline,
+                      color: theme.colorScheme.onPrimaryContainer,
+                      size: 26,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Crear Nueva Publicación',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // Certificaciones
-              if (companyProfile.certifications.isNotEmpty)
-                _buildSection(
-                  context,
-                  title: 'Certificaciones',
-                  icon: Icons.verified_outlined,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: companyProfile.certifications
-                        .map(
-                          (cert) => Chip(
-                            avatar: Icon(
-                              Icons.verified,
-                              size: 18,
-                              color: theme.colorScheme.primary,
-                            ),
-                            label: Text(cert),
-                            backgroundColor: theme.colorScheme.primaryContainer,
-                            labelStyle: TextStyle(
-                              color: theme.colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-
-              if (companyProfile.certifications.isNotEmpty)
-                const SizedBox(height: 16),
-
-              // Botón de nueva publicación
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () {
-                    context.go('/products/new');
-                  },
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Crear Nueva Publicación'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-            ]),
+            ),
           ),
         ),
+
+        const SizedBox(height: 90), // Espacio para el FAB
       ],
     );
   }
@@ -480,34 +567,53 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: theme.colorScheme.outlineVariant, width: 1),
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [
+                        theme.colorScheme.primaryContainer,
+                        theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.7,
+                        ),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.primary.withValues(
+                          alpha: 0.15,
+                        ),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: Icon(icon, size: 20, color: theme.colorScheme.primary),
+                  child: Icon(icon, size: 22, color: theme.colorScheme.primary),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Text(
                   title,
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             child,
           ],
         ),
@@ -528,8 +634,15 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 12),
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 22, color: theme.colorScheme.primary),
+        ),
+        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,10 +651,12 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 label,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 hasValue ? value : 'No especificado',
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -551,6 +666,8 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                   decoration: isLink && hasValue
                       ? TextDecoration.underline
                       : null,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
