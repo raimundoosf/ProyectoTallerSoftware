@@ -55,4 +55,18 @@ class ProductsListViewModel extends ChangeNotifier {
   Future<void> refresh() async {
     await loadAllProducts();
   }
+
+  /// Elimina un producto
+  Future<void> deleteProduct(String productId) async {
+    try {
+      await _repository.deleteProduct(productId);
+      // Actualizar la lista local
+      _products.removeWhere((p) => p.id == productId);
+      notifyListeners();
+    } catch (e) {
+      _error = 'Error al eliminar publicación: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
 }

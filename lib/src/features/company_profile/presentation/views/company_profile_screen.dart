@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
+import 'package:flutter_app/src/features/products/presentation/views/company_products_list_view.dart';
 import 'package:go_router/go_router.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
@@ -12,9 +13,12 @@ class CompanyProfileScreen extends StatefulWidget {
   State<CompanyProfileScreen> createState() => _CompanyProfileScreenState();
 }
 
-class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
+class _CompanyProfileScreenState extends State<CompanyProfileScreen>
+    with SingleTickerProviderStateMixin {
   bool _isEditing = false;
   final _formKey = GlobalKey<FormState>();
+  late TabController _tabController;
+
   // Use controllers while editing to avoid rebuild-resetting the cursor.
   // Controllers are created when entering edit mode and disposed afterwards.
   TextEditingController? _companyNameController;
@@ -53,6 +57,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -63,6 +68,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _companyNameController?.dispose();
     _companyDescriptionController?.dispose();
     _websiteController?.dispose();
@@ -76,45 +82,60 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   Widget build(BuildContext context) {
     return Consumer<CompanyProfileViewModel>(
       builder: (context, viewModel, child) {
+        // If editing, show full-screen edit form without tabs
+        if (_isEditing) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Editar Perfil de Empresa'),
+              leading: viewModel.companyProfile != null
+                  ? IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => setState(() => _isEditing = false),
+                    )
+                  : null,
+            ),
+            body: _buildEditForm(context, viewModel),
+          );
+        }
+
+        // Otherwise, show tabs
         return Scaffold(
           appBar: AppBar(
-            title: Text(
-              _isEditing ? 'Editar Perfil de Empresa' : 'Perfil de Empresa',
-            ),
-            leading: _isEditing && viewModel.companyProfile != null
-                ? IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => setState(() => _isEditing = false),
+            title: const Text('Perfil de Empresa'),
+            bottom: viewModel.companyProfile != null
+                ? TabBar(
+                    controller: _tabController,
+                    tabs: const [
+                      Tab(
+                        icon: Icon(Icons.business),
+                        text: 'Perfil',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.inventory_2),
+                        text: 'Mis Publicaciones',
+                      ),
+                    ],
                   )
                 : null,
           ),
-          body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            transitionBuilder: (child, animation) {
-              final offset = Tween<Offset>(
-                begin: const Offset(0, 0.02),
-                end: Offset.zero,
-              ).animate(animation);
-              return FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: offset,
-                  child: ScaleTransition(scale: animation, child: child),
-                ),
-              );
-            },
-            child: viewModel.isLoading && !_isEditing
-                ? const Center(
-                    key: ValueKey('company-loading'),
-                    child: CircularProgressIndicator(),
-                  )
-                : _isEditing
-                ? _buildEditForm(context, viewModel)
-                : _buildProfileView(context, viewModel),
-          ),
+          body: viewModel.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : viewModel.companyProfile == null
+                  ? _buildNoProfileView(context)
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildProfileView(context, viewModel),
+                        CompanyProductsListView(
+                          companyId: FirebaseAuth.instance.currentUser!.uid,
+                        ),
+                      ],
+                    ),
           floatingActionButton: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: !_isEditing && viewModel.companyProfile != null
+            child: !_isEditing &&
+                    viewModel.companyProfile != null &&
+                    _tabController.index == 0
                 ? FloatingActionButton(
                     key: const ValueKey('company-edit-fab'),
                     onPressed: () {
@@ -141,31 +162,32 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
     _websiteController ??= TextEditingController(text: viewModel.website);
   }
 
+  Widget _buildNoProfileView(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Aún no has creado tu perfil de empresa.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => setState(() => _isEditing = true),
+              child: const Text('Crear Perfil de Empresa'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildProfileView(
     BuildContext context,
     CompanyProfileViewModel viewModel,
   ) {
-    if (viewModel.companyProfile == null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Aún no has creado tu perfil de empresa.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => setState(() => _isEditing = true),
-                child: const Text('Crear Perfil de Empresa'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
     final companyProfile = viewModel.companyProfile!;
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),

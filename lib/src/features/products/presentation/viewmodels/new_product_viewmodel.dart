@@ -8,6 +8,10 @@ class NewProductViewModel extends ChangeNotifier {
 
   NewProductViewModel(this._repository);
 
+  // Edit mode tracking
+  Product? _editingProduct;
+  bool get isEditing => _editingProduct != null;
+
   // Form fields
   String name = '';
   String description = '';
@@ -135,6 +139,26 @@ class NewProductViewModel extends ChangeNotifier {
     }
   }
 
+  /// Initialize form for editing an existing product.
+  void initForEdit(Product product) {
+    _editingProduct = product;
+    name = product.name;
+    description = product.description;
+    serviceCategory = product.serviceCategory;
+    serviceDuration = product.serviceDuration;
+    price = product.price;
+    isService = product.isService;
+    brandLink = product.brandLink;
+    certifications = List.from(product.certifications);
+    metrics = List.from(product.metrics);
+    traceability = List.from(product.traceability);
+    repairLocations = List.from(product.repairLocations);
+    // For images, we keep the existing URLs but clear local paths
+    // The UI will need to display existing URLs
+    _localImagePaths.clear();
+    notifyListeners();
+  }
+
   bool validate() {
     _fieldErrors.clear();
     if (name.trim().isEmpty) _fieldErrors['name'] = 'Nombre requerido';
@@ -147,7 +171,8 @@ class NewProductViewModel extends ChangeNotifier {
       }
     }
     if (price <= 0) _fieldErrors['price'] = 'Precio debe ser mayor a 0';
-    if (_localImagePaths.isEmpty) {
+    // When editing, allow existing images; otherwise require at least one local image
+    if (!isEditing && _localImagePaths.isEmpty) {
       _fieldErrors['images'] = 'Sube al menos 1 imagen';
     }
     notifyListeners();
@@ -160,31 +185,60 @@ class NewProductViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final product = Product(
-        id: '',
-        companyId: companyId,
-        name: name,
-        description: description,
-        price: price,
-        serviceCategory: serviceCategory,
-        serviceDuration: serviceDuration,
-        brandLink: brandLink,
-        imageUrls: [],
-        certifications: certifications,
-        metrics: metrics,
-        traceability: traceability,
-        repairLocations: repairLocations,
-        isService: isService,
-      );
-      final id = await _repository.createProduct(product, _localImagePaths);
-      _isLoading = false;
-      notifyListeners();
-      if (id.isNotEmpty) {
-        // reset form after successful creation
+      if (isEditing) {
+        // Update existing product
+        final updatedProduct = Product(
+          id: _editingProduct!.id,
+          companyId: _editingProduct!.companyId,
+          name: name,
+          description: description,
+          price: price,
+          serviceCategory: serviceCategory,
+          serviceDuration: serviceDuration,
+          brandLink: brandLink,
+          imageUrls: _editingProduct!.imageUrls, // Keep existing URLs for now
+          certifications: certifications,
+          metrics: metrics,
+          traceability: traceability,
+          repairLocations: repairLocations,
+          isService: isService,
+        );
+        await _repository.updateProduct(
+          _editingProduct!.id,
+          updatedProduct,
+          _localImagePaths,
+        );
+        _isLoading = false;
+        notifyListeners();
         resetForm();
         return true;
+      } else {
+        // Create new product
+        final product = Product(
+          id: '',
+          companyId: companyId,
+          name: name,
+          description: description,
+          price: price,
+          serviceCategory: serviceCategory,
+          serviceDuration: serviceDuration,
+          brandLink: brandLink,
+          imageUrls: [],
+          certifications: certifications,
+          metrics: metrics,
+          traceability: traceability,
+          repairLocations: repairLocations,
+          isService: isService,
+        );
+        final id = await _repository.createProduct(product, _localImagePaths);
+        _isLoading = false;
+        notifyListeners();
+        if (id.isNotEmpty) {
+          resetForm();
+          return true;
+        }
+        return false;
       }
-      return false;
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
@@ -195,6 +249,7 @@ class NewProductViewModel extends ChangeNotifier {
 
   /// Reset the form to its initial empty state.
   void resetForm() {
+    _editingProduct = null;
     name = '';
     description = '';
     serviceCategory = '';
@@ -212,4 +267,8 @@ class NewProductViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  /// Get existing image URLs when editing.
+  List<String> get existingImageUrls =>
+      _editingProduct?.imageUrls ?? [];
 }

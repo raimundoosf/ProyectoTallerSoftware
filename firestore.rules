@@ -32,9 +32,13 @@ service cloud.firestore {
       // Lectura pública (ajusta si quieres restringirla)
       allow read: if true;
 
-      // Escritura solo si el usuario autenticado es la empresa propietaria
-      allow create, update, delete: if isAuthenticated() &&
+      // Crear y actualizar: verificar que el companyId coincida con el usuario autenticado
+      allow create, update: if isAuthenticated() &&
         request.resource.data.companyId == request.auth.uid;
+
+      // Eliminar: verificar que el documento existente pertenezca al usuario autenticado
+      allow delete: if isAuthenticated() &&
+        resource.data.companyId == request.auth.uid;
     }
 
     match /{document=**} {

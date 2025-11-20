@@ -55,7 +55,7 @@ class _NewProductViewState extends State<NewProductView> {
       builder: (context, vm, child) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Nueva Publicación'),
+            title: Text(vm.isEditing ? 'Editar Publicación' : 'Nueva Publicación'),
             leading: IconButton(
               icon: const Icon(Icons.close),
               onPressed: () async {
@@ -232,6 +232,52 @@ class _NewProductViewState extends State<NewProductView> {
                           Wrap(
                             spacing: 8,
                             children: [
+                              // Show existing images (when editing)
+                              ...vm.existingImageUrls.mapIndexed((i, url) {
+                                return Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () async {
+                                        showDialog<void>(
+                                          context: context,
+                                          builder: (dctx) => AlertDialog(
+                                            title: const Text('Vista previa'),
+                                            content: Image.network(url),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(dctx).pop(),
+                                                child: const Text('Cerrar'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      child: Image.network(
+                                        url,
+                                        width: 96,
+                                        height: 96,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.all(4),
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.cloud,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                              // Show newly picked images
                               ...vm.localImagePaths.mapIndexed((i, path) {
                                 return Stack(
                                   alignment: Alignment.topRight,
@@ -299,7 +345,7 @@ class _NewProductViewState extends State<NewProductView> {
                                   ],
                                 );
                               }),
-                              if (vm.localImagePaths.length < vm.maxImageCount)
+                              if ((vm.localImagePaths.length + vm.existingImageUrls.length) < vm.maxImageCount)
                                 TextButton.icon(
                                   onPressed: vm.isPicking ? null : vm.pickImage,
                                   icon: vm.isPicking
@@ -513,7 +559,7 @@ class _NewProductViewState extends State<NewProductView> {
                               messenger.showSnackBar(errorSnack);
                             }
                           },
-                          child: const Text('Publicar'),
+                          child: Text(vm.isEditing ? 'Guardar Cambios' : 'Publicar'),
                         ),
                 ],
               ),
