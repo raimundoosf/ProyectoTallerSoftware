@@ -36,4 +36,27 @@ class ProductsRepositoryImpl implements ProductsRepository {
     await docRef.set(data);
     return docRef.id;
   }
+
+  @override
+  Future<List<Product>> getAllProducts() async {
+    final snapshot = await _firestore
+        .collection('products')
+        .orderBy('createdAt', descending: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => Product.fromMap(doc.id, doc.data()))
+        .toList();
+  }
+
+  @override
+  Future<List<Product>> getProductsByCompany(String companyId) async {
+    final snapshot = await _firestore
+        .collection('products')
+        .where('companyId', isEqualTo: companyId)
+        .orderBy('createdAt', descending: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => Product.fromMap(doc.id, doc.data()))
+        .toList();
+  }
 }

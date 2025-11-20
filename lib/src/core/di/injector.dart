@@ -27,6 +27,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 // Products feature
 import 'package:flutter_app/src/features/products/data/repositories/products_repository_impl.dart';
 import 'package:flutter_app/src/features/products/presentation/viewmodels/new_product_viewmodel.dart';
+import 'package:flutter_app/src/features/products/presentation/viewmodels/products_list_viewmodel.dart';
 
 List<SingleChildWidget> get providers {
   // Infrastructure
@@ -73,6 +74,9 @@ List<SingleChildWidget> get providers {
     // Products
     ChangeNotifierProvider(
       create: (_) => NewProductViewModel(productsRepository),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => ProductsListViewModel(productsRepository),
     ),
   ];
 }
