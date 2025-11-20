@@ -10,13 +10,11 @@ import 'package:flutter_app/src/features/products/domain/entities/product.dart';
 class CompanyProductsListView extends StatefulWidget {
   final String companyId;
 
-  const CompanyProductsListView({
-    super.key,
-    required this.companyId,
-  });
+  const CompanyProductsListView({super.key, required this.companyId});
 
   @override
-  State<CompanyProductsListView> createState() => _CompanyProductsListViewState();
+  State<CompanyProductsListView> createState() =>
+      _CompanyProductsListViewState();
 }
 
 class _CompanyProductsListViewState extends State<CompanyProductsListView> {
@@ -32,7 +30,10 @@ class _CompanyProductsListViewState extends State<CompanyProductsListView> {
 
   void _handleEdit(BuildContext context, Product product) {
     // Initialize the NewProductViewModel for editing
-    final newProductVm = Provider.of<NewProductViewModel>(context, listen: false);
+    final newProductVm = Provider.of<NewProductViewModel>(
+      context,
+      listen: false,
+    );
     newProductVm.initForEdit(product);
 
     // Navigate to edit screen
@@ -44,7 +45,10 @@ class _CompanyProductsListViewState extends State<CompanyProductsListView> {
           },
           onPublishSuccess: () {
             // Refresh the list after successful edit
-            final vm = Provider.of<ProductsListViewModel>(context, listen: false);
+            final vm = Provider.of<ProductsListViewModel>(
+              context,
+              listen: false,
+            );
             vm.loadProductsByCompany(widget.companyId);
             Navigator.of(context).pop();
           },
@@ -88,9 +92,9 @@ class _CompanyProductsListViewState extends State<CompanyProductsListView> {
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al eliminar: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error al eliminar: $e')));
         }
       }
     }
@@ -139,18 +143,12 @@ class _CompanyProductsListViewState extends State<CompanyProductsListView> {
                 const SizedBox(height: 16),
                 Text(
                   'No tienes publicaciones aún',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Crea tu primera publicación',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                 ),
               ],
             ),

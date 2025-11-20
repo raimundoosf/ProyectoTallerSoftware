@@ -55,7 +55,9 @@ class _NewProductViewState extends State<NewProductView> {
       builder: (context, vm, child) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(vm.isEditing ? 'Editar Publicación' : 'Nueva Publicación'),
+            title: Text(
+              vm.isEditing ? 'Editar Publicación' : 'Nueva Publicación',
+            ),
             leading: IconButton(
               icon: const Icon(Icons.close),
               onPressed: () async {
@@ -345,7 +347,9 @@ class _NewProductViewState extends State<NewProductView> {
                                   ],
                                 );
                               }),
-                              if ((vm.localImagePaths.length + vm.existingImageUrls.length) < vm.maxImageCount)
+                              if ((vm.localImagePaths.length +
+                                      vm.existingImageUrls.length) <
+                                  vm.maxImageCount)
                                 TextButton.icon(
                                   onPressed: vm.isPicking ? null : vm.pickImage,
                                   icon: vm.isPicking
@@ -559,7 +563,9 @@ class _NewProductViewState extends State<NewProductView> {
                               messenger.showSnackBar(errorSnack);
                             }
                           },
-                          child: Text(vm.isEditing ? 'Guardar Cambios' : 'Publicar'),
+                          child: Text(
+                            vm.isEditing ? 'Guardar Cambios' : 'Publicar',
+                          ),
                         ),
                 ],
               ),

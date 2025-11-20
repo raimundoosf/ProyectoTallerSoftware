@@ -269,6 +269,5 @@ class NewProductViewModel extends ChangeNotifier {
   }
 
   /// Get existing image URLs when editing.
-  List<String> get existingImageUrls =>
-      _editingProduct?.imageUrls ?? [];
+  List<String> get existingImageUrls => _editingProduct?.imageUrls ?? [];
 }

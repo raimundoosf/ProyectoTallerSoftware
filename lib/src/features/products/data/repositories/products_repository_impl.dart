@@ -95,8 +95,10 @@ class ProductsRepositoryImpl implements ProductsRepository {
     }
 
     final data = product.toMap()
-      ..['imageUrls'] = uploadedUrls.isNotEmpty ? uploadedUrls : product.imageUrls;
-    
+      ..['imageUrls'] = uploadedUrls.isNotEmpty
+          ? uploadedUrls
+          : product.imageUrls;
+
     await _firestore.collection('products').doc(productId).update(data);
   }
 
@@ -104,10 +106,10 @@ class ProductsRepositoryImpl implements ProductsRepository {
   Future<void> deleteProduct(String productId) async {
     // Obtener el producto para eliminar sus imágenes de Storage
     final doc = await _firestore.collection('products').doc(productId).get();
-    
+
     if (doc.exists) {
       final product = Product.fromMap(doc.id, doc.data()!);
-      
+
       // Eliminar imágenes de Storage
       for (final imageUrl in product.imageUrls) {
         try {
@@ -117,7 +119,7 @@ class ProductsRepositoryImpl implements ProductsRepository {
           // Ignorar errores si la imagen ya no existe
         }
       }
-      
+
       // Eliminar medios de trazabilidad
       for (final trace in product.traceability) {
         final mediaPath = trace['mediaPath'] as String?;
@@ -131,7 +133,7 @@ class ProductsRepositoryImpl implements ProductsRepository {
         }
       }
     }
-    
+
     // Eliminar el documento
     await _firestore.collection('products').doc(productId).delete();
   }

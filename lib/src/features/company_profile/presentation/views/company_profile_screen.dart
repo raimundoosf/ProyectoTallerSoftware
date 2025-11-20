@@ -106,10 +106,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 ? TabBar(
                     controller: _tabController,
                     tabs: const [
-                      Tab(
-                        icon: Icon(Icons.business),
-                        text: 'Perfil',
-                      ),
+                      Tab(icon: Icon(Icons.business), text: 'Perfil'),
                       Tab(
                         icon: Icon(Icons.inventory_2),
                         text: 'Mis Publicaciones',
@@ -121,19 +118,20 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           body: viewModel.isLoading
               ? const Center(child: CircularProgressIndicator())
               : viewModel.companyProfile == null
-                  ? _buildNoProfileView(context)
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildProfileView(context, viewModel),
-                        CompanyProductsListView(
-                          companyId: FirebaseAuth.instance.currentUser!.uid,
-                        ),
-                      ],
+              ? _buildNoProfileView(context)
+              : TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildProfileView(context, viewModel),
+                    CompanyProductsListView(
+                      companyId: FirebaseAuth.instance.currentUser!.uid,
                     ),
+                  ],
+                ),
           floatingActionButton: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            child: !_isEditing &&
+            child:
+                !_isEditing &&
                     viewModel.companyProfile != null &&
                     _tabController.index == 0
                 ? FloatingActionButton(

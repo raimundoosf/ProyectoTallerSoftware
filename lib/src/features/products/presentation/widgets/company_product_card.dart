@@ -17,7 +17,9 @@ class CompanyProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = product.imageUrls.isNotEmpty ? product.imageUrls.first : null;
+    final imageUrl = product.imageUrls.isNotEmpty
+        ? product.imageUrls.first
+        : null;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -90,10 +92,7 @@ class CompanyProductCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   product.description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
