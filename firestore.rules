@@ -25,6 +25,18 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // Productos: permitimos que la empresa (companyId) cree/edite sus productos
+    // Cada documento de `products` debe incluir el campo `companyId` con el
+    // UID del propietario. Solo ese UID podrá crear/actualizar/borrar.
+    match /products/{productId} {
+      // Lectura pública (ajusta si quieres restringirla)
+      allow read: if true;
+
+      // Escritura solo si el usuario autenticado es la empresa propietaria
+      allow create, update, delete: if isAuthenticated() &&
+        request.resource.data.companyId == request.auth.uid;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -20,7 +20,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
   TextEditingController? _companyNameController;
   TextEditingController? _companyDescriptionController;
   TextEditingController? _websiteController;
-  TextEditingController? _logoUrlController;
+  // logo url controller removed: logo is selected via image picker
 
   static const _industries = [
     'Tecnología',
@@ -66,7 +66,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
     _companyNameController?.dispose();
     _companyDescriptionController?.dispose();
     _websiteController?.dispose();
-    _logoUrlController?.dispose();
+    // no logoUrl controller to dispose
     super.dispose();
   }
 
@@ -149,7 +149,6 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
       text: viewModel.companyDescription,
     );
     _websiteController ??= TextEditingController(text: viewModel.website);
-    _logoUrlController ??= TextEditingController(text: viewModel.logoUrl);
   }
 
   Widget _buildProfileView(
@@ -191,18 +190,32 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                 duration: const Duration(milliseconds: 300),
                 switchInCurve: Curves.easeOutBack,
                 switchOutCurve: Curves.easeIn,
-                child: CircleAvatar(
-                  key: ValueKey(companyProfile.logoUrl),
-                  radius: 60,
-                  backgroundImage: companyProfile.logoUrl.isNotEmpty
-                      ? NetworkImage(companyProfile.logoUrl)
-                      : null,
-                  child: companyProfile.logoUrl.isEmpty
-                      ? const Icon(Icons.business, size: 60)
-                      : null,
+                child: Builder(
+                  builder: (context) {
+                    final imageProvider = _buildProfileImageProvider(
+                      companyProfile.logoUrl,
+                    );
+                    return CircleAvatar(
+                      key: ValueKey(companyProfile.logoUrl),
+                      radius: 60,
+                      backgroundImage: imageProvider,
+                      child: imageProvider == null
+                          ? const Icon(Icons.business, size: 60)
+                          : null,
+                    );
+                  },
                 ),
               ),
             ),
+            // Upload progress indicator (shows while an upload is in progress)
+            if (viewModel.uploadProgress > 0 && viewModel.uploadProgress < 1)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: LinearProgressIndicator(value: viewModel.uploadProgress),
+              ),
 
             const SizedBox(height: 16),
             Text(
@@ -246,6 +259,14 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                   subtitle: Text(companyProfile.certifications.join('\n')),
                 ),
               ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                context.go('/products/new');
+              },
+              icon: const Icon(Icons.post_add_outlined),
+              label: const Text('Nueva Publicación'),
+            ),
           ],
         ),
       ),
@@ -312,16 +333,17 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _logoUrlController,
-            decoration: InputDecoration(
-              labelText: 'O ingresa la URL del logo',
-              errorText: viewModel.fieldErrors['logoUrl'],
+          if (viewModel.uploadProgress > 0 && viewModel.uploadProgress < 1)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: LinearProgressIndicator(value: viewModel.uploadProgress),
             ),
-            onChanged: (v) => viewModel.setLogoUrl(v),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          // logo is selected via image picker; URL input removed
+          const SizedBox(height: 8),
           TextFormField(
             controller: _companyNameController,
             decoration: InputDecoration(

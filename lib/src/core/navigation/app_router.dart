@@ -5,6 +5,7 @@ import 'package:flutter_app/src/features/auth/presentation/views/register_screen
 import 'package:flutter_app/src/features/home/presentation/views/home_screen.dart';
 import 'package:flutter_app/src/features/user_profile/presentation/views/profile_screen.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_screen.dart';
+import 'package:flutter_app/src/features/products/presentation/views/new_product_view.dart';
 
 final GoRouter router = GoRouter(
   routes: <GoRoute>[
@@ -36,6 +37,12 @@ final GoRouter router = GoRouter(
       path: '/company-profile',
       builder: (BuildContext context, GoRouterState state) {
         return const CompanyProfileScreen();
+      },
+    ),
+    GoRoute(
+      path: '/products/new',
+      builder: (BuildContext context, GoRouterState state) {
+        return const NewProductView();
       },
     ),
   ],

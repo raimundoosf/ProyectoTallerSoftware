@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/features/company_profile/domain/entities/company_profile.dart';
 import 'package:flutter_app/src/features/company_profile/domain/usecases/get_company_profile.dart';
@@ -12,6 +14,9 @@ class CompanyProfileViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  double _uploadProgress = 0.0;
+  double get uploadProgress => _uploadProgress;
 
   String? _error;
   String? get error => _error;
@@ -29,6 +34,9 @@ class CompanyProfileViewModel extends ChangeNotifier {
   String? industry;
   String? companyLocation;
   List<String> certifications = [];
+
+  static const int maxLogoBytes = 5 * 1024 * 1024; // 5 MB
+  static const allowedLogoExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
   final Map<String, String?> _fieldErrors = {};
   Map<String, String?> get fieldErrors => _fieldErrors;
@@ -131,18 +139,34 @@ class CompanyProfileViewModel extends ChangeNotifier {
     );
 
     _isLoading = true;
+    _uploadProgress = 0.0;
     _error = null;
     notifyListeners();
 
     try {
-      await _saveCompanyProfile(_currentUserId!, profile);
-      _companyProfile = profile;
+      await _saveCompanyProfile(
+        _currentUserId!,
+        profile,
+        onUploadProgress: (p) {
+          _uploadProgress = p;
+          notifyListeners();
+        },
+      );
+      // reload saved profile to ensure we get any transformed fields
+      final updated = await _getCompanyProfile(_currentUserId!);
+      if (updated != null) {
+        _companyProfile = updated;
+        prefillFrom(updated);
+      } else {
+        _companyProfile = profile;
+      }
       return true;
     } catch (e) {
       _error = e.toString();
       return false;
     } finally {
       _isLoading = false;
+      _uploadProgress = 0.0;
       notifyListeners();
     }
   }
@@ -180,8 +204,21 @@ class CompanyProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _saveCompanyProfile(userId, companyProfile);
-      _companyProfile = companyProfile;
+      await _saveCompanyProfile(
+        userId,
+        companyProfile,
+        onUploadProgress: (p) {
+          _uploadProgress = p;
+          notifyListeners();
+        },
+      );
+      final updated = await _getCompanyProfile(userId);
+      if (updated != null) {
+        _companyProfile = updated;
+        prefillFrom(updated);
+      } else {
+        _companyProfile = companyProfile;
+      }
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -194,6 +231,27 @@ class CompanyProfileViewModel extends ChangeNotifier {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      try {
+        final size = await file.length();
+        final ext = pickedFile.path.split('.').last.toLowerCase();
+        if (!allowedLogoExtensions.contains(ext)) {
+          _fieldErrors['logoUrl'] =
+              'Formato no soportado. Use JPG/PNG/WebP/GIF';
+          notifyListeners();
+          return;
+        }
+        if (size > maxLogoBytes) {
+          _fieldErrors['logoUrl'] = 'Archivo demasiado grande (máx 5 MB)';
+          notifyListeners();
+          return;
+        }
+      } catch (e) {
+        _fieldErrors['logoUrl'] = 'No se pudo leer el archivo';
+        notifyListeners();
+        return;
+      }
+
       // update both the view model form state and the underlying profile
       logoUrl = pickedFile.path;
       final updatedProfile = _companyProfile?.copyWith(
@@ -202,6 +260,7 @@ class CompanyProfileViewModel extends ChangeNotifier {
       if (updatedProfile != null) {
         _companyProfile = updatedProfile;
       }
+      _fieldErrors.remove('logoUrl');
       notifyListeners();
     }
   }
