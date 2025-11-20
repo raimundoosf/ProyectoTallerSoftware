@@ -20,7 +20,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_app/src/core/config/certifications.dart';
 
 class NewProductView extends StatefulWidget {
-  const NewProductView({super.key});
+  const NewProductView({super.key, this.onCancel, this.onPublishSuccess});
+
+  final VoidCallback? onCancel;
+  final VoidCallback? onPublishSuccess;
 
   @override
   State<NewProductView> createState() => _NewProductViewState();
@@ -54,14 +57,52 @@ class _NewProductViewState extends State<NewProductView> {
           appBar: AppBar(
             title: const Text('Nueva Publicación'),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
+              icon: const Icon(Icons.close),
+              onPressed: () async {
+                // Mostrar diálogo de confirmación si hay datos en el formulario
+                final hasData =
+                    vm.name.isNotEmpty ||
+                    vm.description.isNotEmpty ||
+                    vm.localImagePaths.isNotEmpty;
+
+                if (hasData) {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('¿Cancelar publicación?'),
+                      content: const Text(
+                        'Se perderán todos los datos ingresados.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(false),
+                          child: const Text('Continuar editando'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(true),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm != true) return;
+                }
+
+                // Limpiar el formulario antes de cancelar
+                vm.resetForm();
+                // Si hay un callback onCancel, usarlo (desde MainScaffold)
+                if (widget.onCancel != null) {
+                  widget.onCancel!();
                 } else {
-                  context.go('/');
+                  // Fallback: intentar navegar con GoRouter
+                  if (context.mounted) context.go('/');
                 }
               },
+              tooltip: 'Cancelar',
             ),
           ),
           body: SingleChildScrollView(
@@ -461,7 +502,13 @@ class _NewProductViewState extends State<NewProductView> {
                             if (!mounted) return;
                             if (success) {
                               messenger.showSnackBar(successSnack);
-                              router.go('/company-profile');
+                              // Si hay callback onPublishSuccess, usarlo (desde MainScaffold)
+                              if (widget.onPublishSuccess != null) {
+                                widget.onPublishSuccess!();
+                              } else {
+                                // Fallback: navegar con GoRouter
+                                router.go('/company-profile');
+                              }
                             } else {
                               messenger.showSnackBar(errorSnack);
                             }

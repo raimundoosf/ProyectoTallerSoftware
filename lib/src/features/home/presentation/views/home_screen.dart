@@ -20,19 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _navigateToProfile(HomeViewModel viewModel) async {
-    final user = viewModel.currentUser;
-    if (user == null) return;
-    if (viewModel.currentRole == null && !viewModel.isRoleLoading) {
-      await viewModel.fetchUserRole();
-    }
-    if (!mounted) return;
-    final destination = viewModel.currentRole == 'Empresa'
-        ? '/company-profile'
-        : '/profile';
-    context.push(destination);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<HomeViewModel>(
@@ -43,17 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: AppBar(
             title: const Text('Página Principal'),
             actions: [
-              Semantics(
-                button: true,
-                label: 'Abrir perfil',
-                child: IconButton(
-                  icon: const Icon(Icons.person_outline),
-                  tooltip: 'Perfil',
-                  onPressed: currentUser == null
-                      ? null
-                      : () => _navigateToProfile(viewModel),
-                ),
-              ),
               Semantics(
                 button: true,
                 label: 'Cerrar sesión',
@@ -73,34 +49,48 @@ class _HomeScreenState extends State<HomeScreen> {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               transitionBuilder: (child, animation) {
+                final offset = Tween<Offset>(
+                  begin: const Offset(0, 0.05),
+                  end: Offset.zero,
+                ).animate(animation);
                 return FadeTransition(
                   opacity: animation,
-                  child: ScaleTransition(scale: animation, child: child),
+                  child: SlideTransition(position: offset, child: child),
                 );
               },
-              child: viewModel.isRoleLoading
-                  ? const CircularProgressIndicator(
-                      key: ValueKey('home-loading'),
+              child: currentUser == null
+                  ? const Text(
+                      key: ValueKey('no-user'),
+                      'Cargando información del usuario...',
                     )
                   : Column(
-                      key: const ValueKey('home-content'),
+                      key: ValueKey('user-${currentUser.uid}'),
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Icon(Icons.home, size: 64),
+                        const SizedBox(height: 24),
                         Text(
                           '¡Bienvenido!',
-                          style: Theme.of(context).textTheme.headlineLarge,
+                          style: Theme.of(context).textTheme.headlineMedium,
                         ),
-                        const SizedBox(height: 8),
-                        if (currentUser?.email != null)
-                          Text(
-                            currentUser!.email!,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
                         const SizedBox(height: 16),
                         Text(
-                          'Rol: ${viewModel.currentRole ?? 'No definido'}',
+                          'Usa la barra de navegación inferior para explorar',
                           style: Theme.of(context).textTheme.bodyLarge,
+                          textAlign: TextAlign.center,
                         ),
+                        if (viewModel.currentRole != null) ...[
+                          const SizedBox(height: 24),
+                          Chip(
+                            avatar: Icon(
+                              viewModel.currentRole == 'Empresa'
+                                  ? Icons.business
+                                  : Icons.person,
+                              size: 18,
+                            ),
+                            label: Text('Rol: ${viewModel.currentRole}'),
+                          ),
+                        ],
                       ],
                     ),
             ),

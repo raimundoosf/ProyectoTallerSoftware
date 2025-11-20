@@ -86,17 +86,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                     icon: const Icon(Icons.close),
                     onPressed: () => setState(() => _isEditing = false),
                   )
-                : IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      // Si hay historial, regresar; si no, ir a la ruta principal
-                      if (Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop();
-                      } else {
-                        context.go('/');
-                      }
-                    },
-                  ),
+                : null,
           ),
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 350),
