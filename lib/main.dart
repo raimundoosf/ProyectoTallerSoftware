@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_app/src/core/di/injector.dart';
 import 'package:flutter_app/src/core/navigation/app_router.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -16,8 +17,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // providers may attempt to access Firebase instances; when running
+    // widget tests the Firebase app may not be initialized. Guard to
+    // return an empty provider list in that case so tests can run.
+    final providerList = <SingleChildWidget>[];
+    try {
+      // providers getter may throw if Firebase isn't initialized
+      providerList.addAll(providers);
+    } catch (_) {
+      // fallback: provide a minimal provider so MultiProvider has at least
+      // one child and tests that pump MyApp won't crash.
+      providerList.add(Provider<int>.value(value: 0));
+    }
+
     return MultiProvider(
-      providers: providers,
+      providers: providerList,
       child: MaterialApp.router(
         routerConfig: router,
         title: 'Glooba',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/home/presentation/viewmodels/home_viewmodel.dart';
+import 'package:flutter_app/src/features/products/presentation/views/products_list_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,19 +21,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _navigateToProfile(HomeViewModel viewModel) async {
-    final user = viewModel.currentUser;
-    if (user == null) return;
-    if (viewModel.currentRole == null && !viewModel.isRoleLoading) {
-      await viewModel.fetchUserRole();
-    }
-    if (!mounted) return;
-    final destination = viewModel.currentRole == 'Empresa'
-        ? '/company-profile'
-        : '/profile';
-    context.push(destination);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<HomeViewModel>(
@@ -41,19 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Página Principal'),
+            title: const Text('Publicaciones'),
             actions: [
-              Semantics(
-                button: true,
-                label: 'Abrir perfil',
-                child: IconButton(
-                  icon: const Icon(Icons.person_outline),
-                  tooltip: 'Perfil',
-                  onPressed: currentUser == null
-                      ? null
-                      : () => _navigateToProfile(viewModel),
-                ),
-              ),
               Semantics(
                 button: true,
                 label: 'Cerrar sesión',
@@ -69,42 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          body: Center(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: ScaleTransition(scale: animation, child: child),
-                );
-              },
-              child: viewModel.isRoleLoading
-                  ? const CircularProgressIndicator(
-                      key: ValueKey('home-loading'),
-                    )
-                  : Column(
-                      key: const ValueKey('home-content'),
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '¡Bienvenido!',
-                          style: Theme.of(context).textTheme.headlineLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        if (currentUser?.email != null)
-                          Text(
-                            currentUser!.email!,
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Rol: ${viewModel.currentRole ?? 'No definido'}',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-            ),
-          ),
+          body: currentUser == null
+              ? const Center(child: CircularProgressIndicator())
+              : const ProductsListView(),
         );
       },
     );

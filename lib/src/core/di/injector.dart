@@ -22,6 +22,12 @@ import 'package:flutter_app/src/features/user_profile/domain/usecases/save_user_
 import 'package:flutter_app/src/features/user_profile/presentation/viewmodels/profile_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
+// Products feature
+import 'package:flutter_app/src/features/products/data/repositories/products_repository_impl.dart';
+import 'package:flutter_app/src/features/products/presentation/viewmodels/new_product_viewmodel.dart';
+import 'package:flutter_app/src/features/products/presentation/viewmodels/products_list_viewmodel.dart';
 
 List<SingleChildWidget> get providers {
   // Infrastructure
@@ -31,7 +37,14 @@ List<SingleChildWidget> get providers {
   // Repositories
   final authRepository = AuthRepositoryImpl(firebaseAuth, firestore);
   final userProfileRepository = UserProfileRepositoryImpl(firestore);
-  final companyProfileRepository = CompanyProfileRepositoryImpl(firestore);
+  final companyProfileRepository = CompanyProfileRepositoryImpl(
+    firestore,
+    FirebaseStorage.instance,
+  );
+  final productsRepository = ProductsRepositoryImpl(
+    firestore,
+    FirebaseStorage.instance,
+  );
 
   // Use Cases
   final signIn = SignIn(authRepository);
@@ -58,5 +71,12 @@ List<SingleChildWidget> get providers {
           CompanyProfileViewModel(getCompanyProfile, saveCompanyProfile),
     ),
     ChangeNotifierProvider(create: (_) => HomeViewModel(signOut, getUserRole)),
+    // Products
+    ChangeNotifierProvider(
+      create: (_) => NewProductViewModel(productsRepository),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => ProductsListViewModel(productsRepository),
+    ),
   ];
 }

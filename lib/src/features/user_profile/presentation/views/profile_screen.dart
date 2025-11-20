@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 // entity import not required here; ViewModel exposes data and form state
 import 'package:flutter_app/src/features/user_profile/presentation/viewmodels/profile_viewmodel.dart';
-import 'package:go_router/go_router.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -76,17 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: const Icon(Icons.close),
                     onPressed: () => setState(() => _isEditing = false),
                   )
-                : IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      // Si hay historial, hacer pop; si no, ir a la ruta principal
-                      if (Navigator.of(context).canPop()) {
-                        Navigator.of(context).pop();
-                      } else {
-                        context.go('/');
-                      }
-                    },
-                  ),
+                : null,
           ),
           body: AnimatedSwitcher(
             duration: const Duration(milliseconds: 350),

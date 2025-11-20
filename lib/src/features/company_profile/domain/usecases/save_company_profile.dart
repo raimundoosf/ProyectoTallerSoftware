@@ -6,7 +6,15 @@ class SaveCompanyProfile {
 
   SaveCompanyProfile(this.repository);
 
-  Future<void> call(String userId, CompanyProfile companyProfile) {
-    return repository.saveCompanyProfile(userId, companyProfile);
+  Future<void> call(
+    String userId,
+    CompanyProfile companyProfile, {
+    UploadProgressCallback? onUploadProgress,
+  }) {
+    return repository.saveCompanyProfile(
+      userId,
+      companyProfile,
+      onUploadProgress: onUploadProgress,
+    );
   }
 }
