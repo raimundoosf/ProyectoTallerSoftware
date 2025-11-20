@@ -17,6 +17,8 @@ import 'package:flutter_app/src/core/ui/app_snackbar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_app/src/core/config/certifications.dart';
 
 class NewProductView extends StatefulWidget {
@@ -114,68 +116,146 @@ class _NewProductViewState extends State<NewProductView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Tipo: Producto / Servicio (dropdown)
-                  DropdownButtonFormField<String>(
-                    initialValue: vm.isService ? 'Servicio' : 'Producto',
-                    decoration: const InputDecoration(labelText: 'Tipo'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'Producto',
-                        child: Text('Producto'),
+                  // Header card
+                  Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
-                      DropdownMenuItem(
-                        value: 'Servicio',
-                        child: Text('Servicio'),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Información Básica',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Tipo: Producto / Servicio (switch mejorado)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SegmentedButton<bool>(
+                                  segments: const [
+                                    ButtonSegment(
+                                      value: false,
+                                      label: Text('Producto'),
+                                      icon: Icon(Icons.inventory_2_outlined),
+                                    ),
+                                    ButtonSegment(
+                                      value: true,
+                                      label: Text('Servicio'),
+                                      icon: Icon(Icons.work_outline),
+                                    ),
+                                  ],
+                                  selected: {vm.isService},
+                                  onSelectionChanged: (Set<bool> newSelection) {
+                                    vm.setIsService(newSelection.first);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          if (vm.isService) ...[
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              initialValue: vm.serviceCategory,
+                              decoration: InputDecoration(
+                                labelText: 'Categoría del servicio',
+                                hintText: 'ej: Reparación, Instalación',
+                                prefixIcon: const Icon(Icons.category_outlined),
+                                errorText: vm.fieldErrors['serviceCategory'],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onChanged: (v) => vm.serviceCategory = v,
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              initialValue: vm.serviceDuration,
+                              decoration: InputDecoration(
+                                labelText: 'Duración estimada (opcional)',
+                                hintText: 'ej: 30 min, 2 horas',
+                                prefixIcon: const Icon(Icons.schedule_outlined),
+                                errorText: vm.fieldErrors['serviceDuration'],
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              onChanged: (v) => vm.serviceDuration = v,
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
-                    onChanged: (v) {
-                      vm.setIsService(v == 'Servicio');
-                    },
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  if (vm.isService) ...[
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Categoría del servicio',
-                        errorText: vm.fieldErrors['serviceCategory'],
-                      ),
-                      onChanged: (v) => vm.serviceCategory = v,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Duración estimada (ej: 30 min) (opcional)',
-                        errorText: vm.fieldErrors['serviceDuration'],
-                      ),
-                      onChanged: (v) => vm.serviceDuration = v,
-                    ),
-                    const SizedBox(height: 12),
-                  ],
+
+                  const SizedBox(height: 16),
+
+                  // Información principal
                   TextFormField(
+                    initialValue: vm.name,
                     decoration: InputDecoration(
                       labelText: 'Nombre',
+                      hintText: vm.isService
+                          ? 'ej: Reparación de electrodomésticos'
+                          : 'ej: Lavadora eco-friendly',
+                      prefixIcon: const Icon(Icons.title),
                       errorText: vm.fieldErrors['name'],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     onChanged: (v) => vm.name = v,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
+                    initialValue: vm.description,
                     decoration: InputDecoration(
                       labelText: 'Descripción',
+                      hintText: 'Describe los detalles y beneficios',
+                      prefixIcon: const Icon(Icons.description_outlined),
+                      alignLabelWithHint: true,
                       errorText: vm.fieldErrors['description'],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    maxLines: 3,
+                    maxLines: 4,
                     onChanged: (v) => vm.description = v,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
+                    initialValue: vm.price > 0 ? vm.price.toString() : '',
                     decoration: InputDecoration(
                       labelText: 'Precio',
-                      prefixText: '\$',
-                      suffixText: ' CLP',
+                      hintText: '0',
+                      prefixIcon: const Icon(Icons.attach_money),
+                      prefixText: '\$ ',
+                      suffixText: 'CLP',
                       errorText: vm.fieldErrors['price'],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    keyboardType: TextInputType.numberWithOptions(
+                    keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                     onChanged: (v) => vm.price = double.tryParse(v) ?? 0.0,
@@ -731,26 +811,24 @@ class _NewProductViewState extends State<NewProductView> {
   }
 
   Future<LatLng?> _showMapPicker(BuildContext ctx, {LatLng? initial}) async {
-    // Ask for location permission before showing the map. If granted,
-    // enable the myLocation layer; otherwise continue without it.
+    // Ask for location permission
     var status = await Permission.locationWhenInUse.status;
     bool hasLocation = status.isGranted;
     if (!hasLocation) {
       final req = await Permission.locationWhenInUse.request();
       hasLocation = req.isGranted;
-      // If permanently denied, offer to open app settings.
       if (req.isPermanentlyDenied) {
         final open = await showDialog<bool>(
           context: ctx,
           builder: (d) => AlertDialog(
             title: const Text('Permiso denegado'),
             content: const Text(
-              'El permiso de ubicación fue denegado permanentemente. Para centrar el mapa en tu ubicación, abre la configuración y habilita el permiso.',
+              'El permiso de ubicación fue denegado permanentemente. Puedes usar la búsqueda por dirección o abrir la configuración.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(d).pop(false),
-                child: const Text('Continuar sin ubicación'),
+                child: const Text('Continuar'),
               ),
               TextButton(
                 onPressed: () => Navigator.of(d).pop(true),
@@ -763,80 +841,359 @@ class _NewProductViewState extends State<NewProductView> {
           await openAppSettings();
           return null;
         }
-        // else continue without location permission
         hasLocation = false;
       }
     }
 
-    // initial selected point
-    LatLng selected = initial ?? const LatLng(0, 0);
+    // Default location (Santiago, Chile)
+    LatLng selected = initial ?? const LatLng(-33.4489, -70.6693);
 
-    // If we have permission try to get the current device location to center the map
+    // Try to get current location if permission granted
     if (hasLocation) {
       try {
         final pos = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.best,
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 5),
         );
         selected = LatLng(pos.latitude, pos.longitude);
-      } catch (_) {
-        // ignore and proceed with initial
+      } catch (e) {
+        // Continue with default location
+        debugPrint('Error getting location: $e');
       }
     }
 
-    // Show the map picker dialog
+    // Show enhanced map picker dialog
     return await showDialog<LatLng>(
       context: ctx,
       builder: (dctx) {
-        return AlertDialog(
-          title: const Text('Selecciona ubicación'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 360,
-            child: StatefulBuilder(
-              builder: (c, setState) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: selected,
-                      zoom: 12,
+        return _MapPickerDialog(
+          initialPosition: selected,
+          hasLocation: hasLocation,
+        );
+      },
+    );
+  }
+}
+
+// Widget separado para el selector de mapa
+class _MapPickerDialog extends StatefulWidget {
+  final LatLng initialPosition;
+  final bool hasLocation;
+
+  const _MapPickerDialog({
+    required this.initialPosition,
+    required this.hasLocation,
+  });
+
+  @override
+  State<_MapPickerDialog> createState() => _MapPickerDialogState();
+}
+
+class _MapPickerDialogState extends State<_MapPickerDialog> {
+  late LatLng selected;
+  GoogleMapController? mapController;
+  final addressController = TextEditingController();
+  bool isSearching = false;
+  String? searchError;
+
+  @override
+  void initState() {
+    super.initState();
+    selected = widget.initialPosition;
+  }
+
+  @override
+  void dispose() {
+    addressController.dispose();
+    mapController?.dispose();
+    super.dispose();
+  }
+
+  List<String> _getCommonPlaces() {
+    return [
+      // Región Metropolitana
+      'Santiago Centro, Santiago',
+      'Providencia, Santiago',
+      'Las Condes, Santiago',
+      'Vitacura, Santiago',
+      'La Reina, Santiago',
+      'Ñuñoa, Santiago',
+      'Maipú, Santiago',
+      'Puente Alto, Santiago',
+      'La Florida, Santiago',
+      'San Miguel, Santiago',
+      'Estación Central, Santiago',
+      'Recoleta, Santiago',
+      'Independencia, Santiago',
+      'Quilicura, Santiago',
+      'Pudahuel, Santiago',
+      'Peñalolén, Santiago',
+      'Macul, Santiago',
+      'Lo Barnechea, Santiago',
+      'Huechuraba, Santiago',
+      'Cerrillos, Santiago',
+      // Valparaíso
+      'Valparaíso, Valparaíso',
+      'Viña del Mar, Valparaíso',
+      'Concón, Valparaíso',
+      'Quilpué, Valparaíso',
+      'Villa Alemana, Valparaíso',
+      'Quillota, Valparaíso',
+      'San Antonio, Valparaíso',
+      // Concepción
+      'Concepción, Biobío',
+      'Talcahuano, Biobío',
+      'Chiguayante, Biobío',
+      'San Pedro de la Paz, Biobío',
+      'Coronel, Biobío',
+      'Los Ángeles, Biobío',
+      'Chillán, Ñuble',
+      // La Serena - Coquimbo
+      'La Serena, Coquimbo',
+      'Coquimbo, Coquimbo',
+      'Ovalle, Coquimbo',
+      // Norte
+      'Antofagasta, Antofagasta',
+      'Calama, Antofagasta',
+      'Iquique, Tarapacá',
+      'Arica, Arica y Parinacota',
+      'Copiapó, Atacama',
+      // Sur
+      'Temuco, La Araucanía',
+      'Valdivia, Los Ríos',
+      'Puerto Montt, Los Lagos',
+      'Osorno, Los Lagos',
+      'Punta Arenas, Magallanes',
+      'Puerto Varas, Los Lagos',
+      'Coyhaique, Aysén',
+      // Rancagua - O'Higgins
+      'Rancagua, O\'Higgins',
+      'Talca, Maule',
+      'Curicó, Maule',
+    ];
+  }
+
+  Future<void> _searchAddress(String address) async {
+    if (address.trim().isEmpty) return;
+
+    setState(() {
+      isSearching = true;
+      searchError = null;
+    });
+
+    try {
+      List<Location> locations = await locationFromAddress(address);
+
+      if (locations.isNotEmpty && mounted) {
+        final location = locations.first;
+        final newPosition = LatLng(location.latitude, location.longitude);
+
+        setState(() => selected = newPosition);
+
+        await mapController?.animateCamera(
+          CameraUpdate.newLatLngZoom(newPosition, 16),
+        );
+
+        if (mounted) {
+          setState(() {
+            isSearching = false;
+            searchError = null;
+          });
+        }
+      } else if (mounted) {
+        setState(() {
+          isSearching = false;
+          searchError = 'No se encontró la dirección';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isSearching = false;
+          searchError = 'Error al buscar la dirección';
+        });
+      }
+      debugPrint('Geocoding error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Selecciona ubicación'),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 480,
+        child: Column(
+          children: [
+            // Search bar for address with autocomplete
+            TypeAheadField<String>(
+              controller: addressController,
+              builder: (context, controller, focusNode) {
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar dirección (ej: Providencia, Santiago)',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: isSearching
+                        ? const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : addressController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              addressController.clear();
+                              setState(() => searchError = null);
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    myLocationEnabled: hasLocation,
-                    onMapCreated: (controller) async {
-                      if (hasLocation) {
-                        try {
-                          await controller.animateCamera(
-                            CameraUpdate.newLatLngZoom(selected, 16),
-                          );
-                        } catch (_) {}
-                      }
-                    },
-                    onTap: (latlng) {
-                      setState(() => selected = latlng);
-                    },
-                    markers: {
-                      Marker(
-                        markerId: const MarkerId('picked'),
-                        position: selected,
-                      ),
-                    },
+                    errorText: searchError,
                   ),
                 );
               },
+              suggestionsCallback: (pattern) async {
+                if (pattern.isEmpty) {
+                  return _getCommonPlaces();
+                }
+
+                final filtered = _getCommonPlaces()
+                    .where(
+                      (place) =>
+                          place.toLowerCase().contains(pattern.toLowerCase()),
+                    )
+                    .toList();
+
+                return filtered.isNotEmpty ? filtered : _getCommonPlaces();
+              },
+              itemBuilder: (context, suggestion) {
+                return ListTile(
+                  leading: Icon(
+                    Icons.location_on,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: Text(suggestion),
+                  dense: true,
+                );
+              },
+              onSelected: (suggestion) {
+                addressController.text = suggestion;
+                _searchAddress(suggestion);
+              },
+              emptyBuilder: (context) => Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'No se encontraron sugerencias',
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dctx).pop(),
-              child: const Text('Cancelar'),
+
+            const SizedBox(height: 12),
+
+            // Info chip
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.touch_app,
+                    size: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Toca el mapa para seleccionar',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            TextButton(
-              onPressed: () => Navigator.of(dctx).pop(selected),
-              child: const Text('Seleccionar'),
+
+            const SizedBox(height: 12),
+
+            // Map
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: selected,
+                    zoom: 14,
+                  ),
+                  myLocationEnabled: widget.hasLocation,
+                  myLocationButtonEnabled: widget.hasLocation,
+                  onMapCreated: (controller) {
+                    mapController = controller;
+                    controller.animateCamera(
+                      CameraUpdate.newLatLngZoom(selected, 14),
+                    );
+                  },
+                  onTap: (latlng) {
+                    setState(() => selected = latlng);
+                  },
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId('picked'),
+                      position: selected,
+                      draggable: true,
+                      onDragEnd: (newPosition) {
+                        setState(() => selected = newPosition);
+                      },
+                    ),
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Coordinates display
+            Text(
+              'Lat: ${selected.latitude.toStringAsFixed(6)}, '
+              'Lng: ${selected.longitude.toStringAsFixed(6)}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
           ],
-        );
-      },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton.icon(
+          onPressed: () => Navigator.of(context).pop(selected),
+          icon: const Icon(Icons.check),
+          label: const Text('Seleccionar'),
+        ),
+      ],
     );
   }
 }
