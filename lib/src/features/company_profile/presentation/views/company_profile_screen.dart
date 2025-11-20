@@ -101,17 +101,44 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
         // Otherwise, show tabs
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Perfil de Empresa'),
+            title: const Text('Mi Empresa'),
+            elevation: 0,
             bottom: viewModel.companyProfile != null
-                ? TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(icon: Icon(Icons.business), text: 'Perfil'),
-                      Tab(
-                        icon: Icon(Icons.inventory_2),
-                        text: 'Mis Publicaciones',
+                ? PreferredSize(
+                    preferredSize: const Size.fromHeight(48),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
                       ),
-                    ],
+                      child: TabBar(
+                        controller: _tabController,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicator: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                        ),
+                        labelColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimaryContainer,
+                        unselectedLabelColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
+                        tabs: const [
+                          Tab(icon: Icon(Icons.business), text: 'Perfil'),
+                          Tab(
+                            icon: Icon(Icons.inventory_2),
+                            text: 'Publicaciones',
+                          ),
+                        ],
+                      ),
+                    ),
                   )
                 : null,
           ),
@@ -130,18 +157,21 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 ),
           floatingActionButton: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return ScaleTransition(scale: animation, child: child);
+            },
             child:
                 !_isEditing &&
                     viewModel.companyProfile != null &&
                     _tabController.index == 0
-                ? FloatingActionButton(
+                ? FloatingActionButton.extended(
                     key: const ValueKey('company-edit-fab'),
                     onPressed: () {
-                      // initialize controllers from the view model when entering edit mode
                       _initControllersFromViewModel(viewModel);
                       setState(() => _isEditing = true);
                     },
-                    child: const Icon(Icons.edit),
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Editar'),
                   )
                 : const SizedBox.shrink(key: ValueKey('company-fab-empty')),
           ),
@@ -161,20 +191,54 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
   }
 
   Widget _buildNoProfileView(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Aún no has creado tu perfil de empresa.',
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.3,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.business_outlined,
+                size: 80,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Bienvenido a tu Perfil de Empresa',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
+            const SizedBox(height: 12),
+            Text(
+              'Crea tu perfil para comenzar a publicar productos y servicios que tus clientes puedan descubrir.',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            FilledButton.icon(
               onPressed: () => setState(() => _isEditing = true),
-              child: const Text('Crear Perfil de Empresa'),
+              icon: const Icon(Icons.add_business),
+              label: const Text('Crear Perfil de Empresa'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+              ),
             ),
           ],
         ),
@@ -187,109 +251,312 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
     CompanyProfileViewModel viewModel,
   ) {
     final companyProfile = viewModel.companyProfile!;
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOutBack,
-                switchOutCurve: Curves.easeIn,
-                child: Builder(
-                  builder: (context) {
-                    final imageProvider = _buildProfileImageProvider(
-                      companyProfile.logoUrl,
-                    );
-                    return CircleAvatar(
-                      key: ValueKey(companyProfile.logoUrl),
-                      radius: 60,
-                      backgroundImage: imageProvider,
-                      child: imageProvider == null
-                          ? const Icon(Icons.business, size: 60)
-                          : null,
-                    );
-                  },
-                ),
-              ),
-            ),
-            // Upload progress indicator (shows while an upload is in progress)
-            if (viewModel.uploadProgress > 0 && viewModel.uploadProgress < 1)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                child: LinearProgressIndicator(value: viewModel.uploadProgress),
-              ),
+    final theme = Theme.of(context);
 
-            const SizedBox(height: 16),
-            Text(
-              companyProfile.companyName,
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            Card(
-              child: Column(
-                children: [
-                  _buildInfoTile(
-                    Icons.business_center_outlined,
-                    'Industria',
-                    companyProfile.industry,
-                  ),
-                  _buildInfoTile(
-                    Icons.location_on_outlined,
-                    'Ubicación',
-                    companyProfile.companyLocation,
-                  ),
-                  _buildInfoTile(
-                    Icons.link_outlined,
-                    'Sitio Web',
-                    companyProfile.website,
-                  ),
-                  _buildInfoTile(
-                    Icons.description_outlined,
-                    'Descripción',
-                    companyProfile.companyDescription,
-                  ),
+    return CustomScrollView(
+      slivers: [
+        // Header con logo y nombre
+        SliverToBoxAdapter(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.colorScheme.primaryContainer,
+                  theme.colorScheme.secondaryContainer,
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            if (companyProfile.certifications.isNotEmpty)
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.verified_outlined),
-                  title: const Text('Certificaciones'),
-                  subtitle: Text(companyProfile.certifications.join('\n')),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  // Logo de la empresa
+                  Hero(
+                    tag: 'company-logo',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.colorScheme.surface,
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        switchInCurve: Curves.easeOutBack,
+                        switchOutCurve: Curves.easeIn,
+                        child: Builder(
+                          builder: (context) {
+                            final imageProvider = _buildProfileImageProvider(
+                              companyProfile.logoUrl,
+                            );
+                            return CircleAvatar(
+                              key: ValueKey(companyProfile.logoUrl),
+                              radius: 60,
+                              backgroundColor: theme.colorScheme.surface,
+                              backgroundImage: imageProvider,
+                              child: imageProvider == null
+                                  ? Icon(
+                                      Icons.business,
+                                      size: 60,
+                                      color: theme.colorScheme.primary,
+                                    )
+                                  : null,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Nombre de la empresa
+                  Text(
+                    companyProfile.companyName,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  // Industria como chip
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.business_center,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          companyProfile.industry,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Contenido del perfil
+        SliverPadding(
+          padding: const EdgeInsets.all(16.0),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              // Descripción
+              _buildSection(
+                context,
+                title: 'Acerca de',
+                icon: Icons.info_outline,
+                child: Text(
+                  companyProfile.companyDescription.isNotEmpty
+                      ? companyProfile.companyDescription
+                      : 'Sin descripción',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    height: 1.5,
+                  ),
                 ),
               ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                context.go('/products/new');
-              },
-              icon: const Icon(Icons.post_add_outlined),
-              label: const Text('Nueva Publicación'),
+
+              const SizedBox(height: 16),
+
+              // Información de contacto
+              _buildSection(
+                context,
+                title: 'Información',
+                icon: Icons.contact_page_outlined,
+                child: Column(
+                  children: [
+                    _buildInfoRow(
+                      context,
+                      icon: Icons.location_on_outlined,
+                      label: 'Ubicación',
+                      value: companyProfile.companyLocation,
+                    ),
+                    const Divider(height: 24),
+                    _buildInfoRow(
+                      context,
+                      icon: Icons.language_outlined,
+                      label: 'Sitio Web',
+                      value: companyProfile.website,
+                      isLink: true,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Certificaciones
+              if (companyProfile.certifications.isNotEmpty)
+                _buildSection(
+                  context,
+                  title: 'Certificaciones',
+                  icon: Icons.verified_outlined,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: companyProfile.certifications
+                        .map(
+                          (cert) => Chip(
+                            avatar: Icon(
+                              Icons.verified,
+                              size: 18,
+                              color: theme.colorScheme.primary,
+                            ),
+                            label: Text(cert),
+                            backgroundColor: theme.colorScheme.primaryContainer,
+                            labelStyle: TextStyle(
+                              color: theme.colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+
+              if (companyProfile.certifications.isNotEmpty)
+                const SizedBox(height: 16),
+
+              // Botón de nueva publicación
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    context.go('/products/new');
+                  },
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Crear Nueva Publicación'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: 20, color: theme.colorScheme.primary),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 16),
+            child,
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoTile(IconData icon, String title, String? subtitle) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(
-        subtitle != null && subtitle.isNotEmpty ? subtitle : 'No especificado',
-      ),
+  Widget _buildInfoRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+    bool isLink = false,
+  }) {
+    final theme = Theme.of(context);
+    final hasValue = value.isNotEmpty;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: theme.colorScheme.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                hasValue ? value : 'No especificado',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: isLink && hasValue
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface,
+                  decoration: isLink && hasValue
+                      ? TextDecoration.underline
+                      : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
