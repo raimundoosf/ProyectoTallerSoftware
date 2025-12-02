@@ -4,15 +4,28 @@ class Product {
   final String name;
   final String description;
   final double price;
-  final String serviceCategory;
-  final String serviceDuration;
+  final bool priceOnRequest; // "A convenir"
   final String brandLink; // link to company profile (non editable)
   final List<String> imageUrls;
   final List<String> certifications;
-  final List<Map<String, dynamic>> metrics;
-  final List<Map<String, dynamic>> traceability; // points with media links
   final List<Map<String, dynamic>> repairLocations;
   final bool isService;
+
+  // Campos para PRODUCTOS
+  final String productCategory;
+  final String condition; // Nuevo, Usado, Reacondicionado
+  final int warrantyMonths; // Garantía en meses (0 = sin garantía)
+
+  // Campos para SERVICIOS
+  final String serviceCategory;
+  final int serviceDurationMinutes; // Duración en minutos
+  final String serviceModality; // Presencial, Online, A domicilio
+  final List<String> serviceCoverage; // Regiones/comunas
+  final String serviceSchedule; // Horarios disponibles
+
+  // Campos comunes
+  final List<String> tags;
+  final String terms; // Condiciones y términos
 
   Product({
     required this.id,
@@ -20,15 +33,25 @@ class Product {
     required this.name,
     required this.description,
     required this.price,
-    this.serviceCategory = '',
-    this.serviceDuration = '',
+    this.priceOnRequest = false,
     required this.brandLink,
     required this.imageUrls,
     this.certifications = const [],
-    this.metrics = const [],
-    this.traceability = const [],
     this.repairLocations = const [],
     this.isService = false,
+    // Productos
+    this.productCategory = '',
+    this.condition = '',
+    this.warrantyMonths = 0,
+    // Servicios
+    this.serviceCategory = '',
+    this.serviceDurationMinutes = 0,
+    this.serviceModality = '',
+    this.serviceCoverage = const [],
+    this.serviceSchedule = '',
+    // Comunes
+    this.tags = const [],
+    this.terms = '',
   });
 
   Map<String, dynamic> toMap() {
@@ -37,15 +60,25 @@ class Product {
       'name': name,
       'description': description,
       'price': price,
-      'serviceCategory': serviceCategory,
-      'serviceDuration': serviceDuration,
+      'priceOnRequest': priceOnRequest,
       'brandLink': brandLink,
       'imageUrls': imageUrls,
       'certifications': certifications,
-      'metrics': metrics,
-      'traceability': traceability,
       'repairLocations': repairLocations,
       'isService': isService,
+      // Productos
+      'productCategory': productCategory,
+      'condition': condition,
+      'warrantyMonths': warrantyMonths,
+      // Servicios
+      'serviceCategory': serviceCategory,
+      'serviceDurationMinutes': serviceDurationMinutes,
+      'serviceModality': serviceModality,
+      'serviceCoverage': serviceCoverage,
+      'serviceSchedule': serviceSchedule,
+      // Comunes
+      'tags': tags,
+      'terms': terms,
       'createdAt': DateTime.now().toIso8601String(),
     };
   }
@@ -57,17 +90,27 @@ class Product {
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       price: (map['price'] is num) ? (map['price'] as num).toDouble() : 0.0,
-      serviceCategory: map['serviceCategory'] ?? '',
-      serviceDuration: map['serviceDuration'] ?? '',
+      priceOnRequest: map['priceOnRequest'] ?? false,
       brandLink: map['brandLink'] ?? '',
       imageUrls: List<String>.from(map['imageUrls'] ?? []),
       certifications: List<String>.from(map['certifications'] ?? []),
-      metrics: List<Map<String, dynamic>>.from(map['metrics'] ?? []),
-      traceability: List<Map<String, dynamic>>.from(map['traceability'] ?? []),
       repairLocations: List<Map<String, dynamic>>.from(
         map['repairLocations'] ?? [],
       ),
       isService: map['isService'] ?? false,
+      // Productos
+      productCategory: map['productCategory'] ?? '',
+      condition: map['condition'] ?? '',
+      warrantyMonths: map['warrantyMonths'] ?? 0,
+      // Servicios
+      serviceCategory: map['serviceCategory'] ?? '',
+      serviceDurationMinutes: map['serviceDurationMinutes'] ?? 0,
+      serviceModality: map['serviceModality'] ?? '',
+      serviceCoverage: List<String>.from(map['serviceCoverage'] ?? []),
+      serviceSchedule: map['serviceSchedule'] ?? '',
+      // Comunes
+      tags: List<String>.from(map['tags'] ?? []),
+      terms: map['terms'] ?? '',
     );
   }
 }

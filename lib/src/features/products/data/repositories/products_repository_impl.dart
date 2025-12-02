@@ -119,19 +119,6 @@ class ProductsRepositoryImpl implements ProductsRepository {
           // Ignorar errores si la imagen ya no existe
         }
       }
-
-      // Eliminar medios de trazabilidad
-      for (final trace in product.traceability) {
-        final mediaPath = trace['mediaPath'] as String?;
-        if (mediaPath != null && mediaPath.isNotEmpty) {
-          try {
-            final ref = _storage.refFromURL(mediaPath);
-            await ref.delete();
-          } catch (e) {
-            // Ignorar errores
-          }
-        }
-      }
     }
 
     // Eliminar el documento
