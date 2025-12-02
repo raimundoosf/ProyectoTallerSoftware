@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/features/products/domain/entities/product.dart';
+import 'package:flutter_app/src/features/company_profile/domain/entities/company_profile.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -658,28 +659,26 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                                       fontSize: 16,
                                     ),
                                   ),
-                                  if (company?.companyLocation != null) ...[
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          size: 16,
-                                          color: Colors.grey[600],
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            company!.companyLocation,
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 14,
-                                            ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.public_outlined,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          _getCoverageText(company),
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                   if (company?.website != null &&
                                       company!.website.isNotEmpty) ...[
                                     const SizedBox(height: 4),
@@ -761,5 +760,23 @@ class _ProductDetailViewState extends State<ProductDetailView> {
         ).showSnackBar(SnackBar(content: Text('No se puede abrir: $url')));
       }
     }
+  }
+
+  String _getCoverageText(CompanyProfile? company) {
+    if (company == null) return 'Cargando...';
+
+    final level = company.coverageLevel;
+    if (level == 'Nacional') {
+      return 'Cobertura Nacional';
+    } else if (level == 'Regional') {
+      final count = company.coverageRegions.length;
+      if (count == 0) return 'Cobertura Regional';
+      return 'Cobertura en $count ${count == 1 ? 'región' : 'regiones'}';
+    } else if (level == 'Comunal') {
+      final count = company.coverageCommunes.length;
+      if (count == 0) return 'Cobertura Comunal';
+      return 'Cobertura en $count ${count == 1 ? 'comuna' : 'comunas'}';
+    }
+    return 'Cobertura no especificada';
   }
 }
