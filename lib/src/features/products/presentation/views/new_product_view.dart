@@ -227,6 +227,7 @@ class _NewProductViewState extends State<NewProductView> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
+              // ignore: deprecated_member_use
               ? theme.colorScheme.primaryContainer.withOpacity(0.5)
               : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
@@ -243,6 +244,7 @@ class _NewProductViewState extends State<NewProductView> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isSelected
+                    // ignore: deprecated_member_use
                     ? theme.colorScheme.primary.withOpacity(0.1)
                     : theme.colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
@@ -421,6 +423,7 @@ class _NewProductViewState extends State<NewProductView> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
+              // ignore: deprecated_member_use
               color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
@@ -509,6 +512,7 @@ class _NewProductViewState extends State<NewProductView> {
             ? Theme.of(context).colorScheme.surfaceContainerLowest
             : Theme.of(
                 context,
+                // ignore: deprecated_member_use
               ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
       ),
       onChanged: onChanged,
@@ -620,6 +624,7 @@ class _NewProductViewState extends State<NewProductView> {
       case 'Nuevo':
         return primary;
       case 'Como nuevo':
+        // ignore: deprecated_member_use
         return primary.withOpacity(0.8);
       case 'Buen estado':
         return secondary;
@@ -643,7 +648,7 @@ class _NewProductViewState extends State<NewProductView> {
     bool isRequired = false,
   }) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       decoration: InputDecoration(
         labelText: isRequired ? '$label *' : label,
         hintText: hint,
@@ -894,6 +899,7 @@ class _NewProductViewState extends State<NewProductView> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: imageCount > 0
+              // ignore: deprecated_member_use
               ? theme.colorScheme.primary.withOpacity(0.15)
               : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
@@ -1027,7 +1033,9 @@ class _NewProductViewState extends State<NewProductView> {
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.5,
+          ),
           border: Border.all(
             color: theme.colorScheme.outlineVariant,
             width: 1.5,
@@ -1048,7 +1056,7 @@ class _NewProductViewState extends State<NewProductView> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1114,7 +1122,7 @@ class _NewProductViewState extends State<NewProductView> {
                       size: 18,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
-              selectedColor: theme.colorScheme.primary.withOpacity(0.15),
+              selectedColor: theme.colorScheme.primary.withValues(alpha: 0.15),
               checkmarkColor: theme.colorScheme.primary,
               side: BorderSide(
                 color: isSelected
@@ -1158,7 +1166,9 @@ class _NewProductViewState extends State<NewProductView> {
                     color: theme.colorScheme.primary,
                   ),
                 ),
-                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                backgroundColor: theme.colorScheme.primary.withValues(
+                  alpha: 0.1,
+                ),
                 deleteIcon: const Icon(Icons.close_rounded, size: 18),
                 deleteIconColor: theme.colorScheme.primary,
                 onDeleted: () => vm.removeTag(tag),
@@ -1404,8 +1414,8 @@ class _NewProductViewState extends State<NewProductView> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.primary.withOpacity(0.05),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(16),
@@ -1434,7 +1444,7 @@ class _NewProductViewState extends State<NewProductView> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
