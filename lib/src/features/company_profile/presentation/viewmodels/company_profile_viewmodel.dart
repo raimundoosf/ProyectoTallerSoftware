@@ -302,7 +302,8 @@ class CompanyProfileViewModel extends ChangeNotifier {
       notifyListeners();
       return null;
     } catch (e) {
-      _error = 'Error al subir documento: ${e.toString().split(':').last.trim()}';
+      _error =
+          'Error al subir documento: ${e.toString().split(':').last.trim()}';
       _isUploadingCertification = false;
       _certificationUploadProgress = 0.0;
       notifyListeners();

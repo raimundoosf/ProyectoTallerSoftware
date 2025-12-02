@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/home/presentation/views/home_screen.dart';
 import 'package:flutter_app/src/features/products/presentation/views/new_product_view.dart';
@@ -30,13 +31,35 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   Future<void> _loadUserRole() async {
     if (!mounted) return;
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    // Si no hay usuario autenticado, redirigir al login
+    if (currentUser == null) {
+      if (mounted) {
+        context.go('/login');
+      }
+      return;
+    }
+
     final viewModel = context.read<HomeViewModel>();
     await viewModel.fetchUserRole();
-    if (mounted) {
-      setState(() {
-        _userRole = viewModel.currentRole;
-      });
+
+    if (!mounted) return;
+
+    // Si no se pudo obtener el rol (usuario sin datos en Firestore),
+    // cerrar sesión y redirigir al login
+    if (viewModel.currentRole == null) {
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        context.go('/login');
+      }
+      return;
     }
+
+    setState(() {
+      _userRole = viewModel.currentRole;
+    });
   }
 
   void _navigateToIndex(int index) {

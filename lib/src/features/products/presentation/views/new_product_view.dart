@@ -32,23 +32,26 @@ class NewProductView extends StatefulWidget {
 }
 
 class _NewProductViewState extends State<NewProductView> {
-  final _formKey = GlobalKey<FormState>();
-
   @override
   void initState() {
     super.initState();
-    // If company id is available, set brand link in the VM
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final vm = context.read<NewProductViewModel>();
+    // Resetear el formulario al entrar a la vista
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final vm = context.read<NewProductViewModel>();
+      // Solo resetear si no estamos editando un producto existente
+      if (!vm.isEditing) {
+        vm.resetForm();
+      }
+      // If company id is available, set brand link in the VM
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
         vm.setBrandLink('/businesses/$userId');
         // load the company profile so we can display the company name
         try {
           context.read<CompanyProfileViewModel>().loadCompanyProfile(userId);
         } catch (_) {}
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -112,7 +115,7 @@ class _NewProductViewState extends State<NewProductView> {
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Form(
-              key: _formKey,
+              key: ValueKey('product_form_${vm.formVersion}'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

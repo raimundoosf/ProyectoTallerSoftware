@@ -12,6 +12,10 @@ class NewProductViewModel extends ChangeNotifier {
   Product? _editingProduct;
   bool get isEditing => _editingProduct != null;
 
+  // Form version key - incrementado cada vez que se resetea el formulario
+  int _formVersion = 0;
+  int get formVersion => _formVersion;
+
   // Form fields
   String name = '';
   String description = '';
@@ -265,6 +269,7 @@ class NewProductViewModel extends ChangeNotifier {
     _localImagePaths.clear();
     _fieldErrors.clear();
     _error = null;
+    _formVersion++; // Incrementar versión para forzar reconstrucción del Form
     notifyListeners();
   }
 

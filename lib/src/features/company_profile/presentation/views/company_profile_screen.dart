@@ -1546,11 +1546,16 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
             const ListTile(
               leading: Icon(Icons.verified_outlined),
               title: Text('Certificaciones'),
-              subtitle: Text('Añade certificaciones con documentos de respaldo'),
+              subtitle: Text(
+                'Añade certificaciones con documentos de respaldo',
+              ),
             ),
             if (viewModel.isUploadingCertification)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Column(
                   children: [
                     LinearProgressIndicator(
@@ -1564,72 +1569,75 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                   ],
                 ),
               ),
-            ...certs.asMap().entries.map(
-              (entry) {
-                final index = entry.key;
-                final cert = entry.value;
-                final name = cert['name'] ?? '';
-                final documentUrl = cert['documentUrl'] ?? '';
-                final hasDocument = documentUrl.isNotEmpty;
+            ...certs.asMap().entries.map((entry) {
+              final index = entry.key;
+              final cert = entry.value;
+              final name = cert['name'] ?? '';
+              final documentUrl = cert['documentUrl'] ?? '';
+              final hasDocument = documentUrl.isNotEmpty;
 
-                return ListTile(
-                  leading: Icon(
-                    hasDocument ? Icons.verified : Icons.verified_outlined,
-                    color: hasDocument ? theme.colorScheme.primary : null,
-                  ),
-                  title: Text(name),
-                  subtitle: hasDocument
-                      ? InkWell(
-                          onTap: () => _launchURL(documentUrl),
-                          child: Text(
-                            'Ver documento',
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              decoration: TextDecoration.underline,
-                            ),
+              return ListTile(
+                leading: Icon(
+                  hasDocument ? Icons.verified : Icons.verified_outlined,
+                  color: hasDocument ? theme.colorScheme.primary : null,
+                ),
+                title: Text(name),
+                subtitle: hasDocument
+                    ? InkWell(
+                        onTap: () => _launchURL(documentUrl),
+                        child: Text(
+                          'Ver documento',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            decoration: TextDecoration.underline,
                           ),
-                        )
-                      : const Text(
-                          'Sin documento adjunto',
-                          style: TextStyle(fontStyle: FontStyle.italic),
                         ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Botón para subir/cambiar documento
-                      IconButton(
-                        icon: Icon(
-                          hasDocument ? Icons.upload_file : Icons.attach_file,
-                          color: hasDocument ? theme.colorScheme.primary : null,
-                        ),
-                        tooltip: hasDocument ? 'Cambiar documento' : 'Adjuntar documento',
-                        onPressed: viewModel.isUploadingCertification
-                            ? null
-                            : () async {
-                                final userId = context
-                                    .read<CompanyProfileViewModel>()
-                                    .currentUserId;
-                                if (userId == null) return;
+                      )
+                    : const Text(
+                        'Sin documento adjunto',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Botón para subir/cambiar documento
+                    IconButton(
+                      icon: Icon(
+                        hasDocument ? Icons.upload_file : Icons.attach_file,
+                        color: hasDocument ? theme.colorScheme.primary : null,
+                      ),
+                      tooltip: hasDocument
+                          ? 'Cambiar documento'
+                          : 'Adjuntar documento',
+                      onPressed: viewModel.isUploadingCertification
+                          ? null
+                          : () async {
+                              final userId = context
+                                  .read<CompanyProfileViewModel>()
+                                  .currentUserId;
+                              if (userId == null) return;
 
-                                final url = await viewModel
-                                    .pickAndUploadCertificationDocument(userId);
-                                if (url != null) {
-                                  viewModel.updateCertificationDocument(index, url);
-                                }
-                              },
-                      ),
-                      // Botón para eliminar certificación
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () {
-                          viewModel.removeCertificationAt(index);
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                              final url = await viewModel
+                                  .pickAndUploadCertificationDocument(userId);
+                              if (url != null) {
+                                viewModel.updateCertificationDocument(
+                                  index,
+                                  url,
+                                );
+                              }
+                            },
+                    ),
+                    // Botón para eliminar certificación
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () {
+                        viewModel.removeCertificationAt(index);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -1639,8 +1647,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                       onPressed: viewModel.isUploadingCertification
                           ? null
                           : () async {
-                              final result =
-                                  await _showAddCertificationDialog(context);
+                              final result = await _showAddCertificationDialog(
+                                context,
+                              );
                               if (result != null) {
                                 viewModel.addCertification(
                                   result['name']!,
@@ -1692,7 +1701,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                         ),
                         onChanged: (v) {
                           certName = v;
-                          setDialogState(() {}); // Rebuild para actualizar botón
+                          setDialogState(
+                            () {},
+                          ); // Rebuild para actualizar botón
                         },
                       ),
                       const SizedBox(height: 16),
@@ -1728,7 +1739,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                             Expanded(
                               child: Text(
                                 'Documento adjuntado',
-                                style: TextStyle(color: theme.colorScheme.primary),
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
                             IconButton(
@@ -1758,7 +1771,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                       Text(
                         'Formatos: JPG, PNG (máx 10 MB)',
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.6,
+                          ),
                         ),
                       ),
                     ],
@@ -1772,12 +1787,14 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                     child: const Text('Cancelar'),
                   ),
                   TextButton(
-                    onPressed: certName.trim().isEmpty || viewModel.isUploadingCertification
+                    onPressed:
+                        certName.trim().isEmpty ||
+                            viewModel.isUploadingCertification
                         ? null
                         : () => Navigator.of(ctx).pop({
-                              'name': certName.trim(),
-                              'documentUrl': documentUrlNotifier.value ?? '',
-                            }),
+                            'name': certName.trim(),
+                            'documentUrl': documentUrlNotifier.value ?? '',
+                          }),
                     child: const Text('Añadir'),
                   ),
                 ],
@@ -2391,10 +2408,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 4,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
     );
   }
