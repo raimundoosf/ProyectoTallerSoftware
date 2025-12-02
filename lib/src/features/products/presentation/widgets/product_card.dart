@@ -9,8 +9,21 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final theme = Theme.of(context);
+
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
@@ -20,65 +33,95 @@ class ProductCard extends StatelessWidget {
                   ProductDetailView(product: product),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                    // Fade in del contenido que no es Hero
                     return FadeTransition(opacity: animation, child: child);
                   },
               transitionDuration: const Duration(milliseconds: 400),
             ),
           );
         },
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen principal
-            if (product.imageUrls.isNotEmpty)
-              Hero(
-                tag: 'product-image-${product.id}',
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Image.network(
-                    product.imageUrls.first,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 64),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: Colors.grey[300],
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                : null,
+            // Imagen con badge de tipo
+            Stack(
+              children: [
+                if (product.imageUrls.isNotEmpty)
+                  Hero(
+                    tag: 'product-image-${product.id}',
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Image.network(
+                        product.imageUrls.first,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildPlaceholder(context);
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                else
+                  Hero(
+                    tag: 'product-image-${product.id}',
+                    child: AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: _buildPlaceholder(context),
+                    ),
+                  ),
+                // Badge de tipo
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface.withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          product.isService
+                              ? Icons.handyman_rounded
+                              : Icons.inventory_2_rounded,
+                          size: 14,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          product.isService ? 'Servicio' : 'Producto',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ),
-              )
-            else
-              Hero(
-                tag: 'product-image-${product.id}',
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Container(
-                    color: Colors.grey[300],
-                    child: Icon(
-                      product.isService
-                          ? Icons.room_service
-                          : Icons.inventory_2,
-                      size: 64,
-                      color: Colors.grey[600],
+                      ],
                     ),
                   ),
                 ),
-              ),
+              ],
+            ),
 
             // Contenido
             Padding(
@@ -86,130 +129,68 @@ class ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tipo (Producto o Servicio)
+                  // Nombre con certificación y categoría
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        product.isService
-                            ? Icons.room_service
-                            : Icons.shopping_bag,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        product.isService ? 'Servicio' : 'Producto',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                      Expanded(
+                        child: Text(
+                          product.name,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (product.isService &&
-                          product.serviceCategory.isNotEmpty) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '• ${product.serviceCategory}',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
+                      if (product.certifications.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.verified_rounded,
+                          size: 18,
+                          color: theme.colorScheme.primary,
                         ),
                       ],
                     ],
                   ),
-                  const SizedBox(height: 8),
 
-                  // Nombre
-                  Text(
-                    product.name,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  // Categoría debajo del nombre
+                  if (_getCategory().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        _getCategory(),
+                        style: TextStyle(
+                          color: theme.colorScheme.outline,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                   const SizedBox(height: 8),
 
                   // Descripción
                   Text(
                     product.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 3,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 12),
 
                   // Precio
-                  Row(
-                    children: [
-                      Text(
-                        '\$${product.price.toStringAsFixed(0)} CLP',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      if (product.isService &&
-                          product.serviceDuration.isNotEmpty) ...[
-                        const Spacer(),
-                        Icon(
-                          Icons.access_time,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          product.serviceDuration,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-
-                  // Certificaciones
-                  if (product.certifications.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: product.certifications.take(3).map((cert) {
-                        return Chip(
-                          label: Text(
-                            cert,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          visualDensity: VisualDensity.compact,
-                        );
-                      }).toList(),
+                  Text(
+                    product.priceOnRequest
+                        ? 'Solicitar cotización'
+                        : '\$${_formatPrice(product.price)}',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-
-                  // Indicadores de características
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      if (product.traceability.isNotEmpty)
-                        _buildFeatureIndicator(
-                          Icons.location_on_outlined,
-                          'Trazabilidad',
-                          context,
-                        ),
-                      if (product.traceability.isNotEmpty &&
-                          product.repairLocations.isNotEmpty)
-                        const SizedBox(width: 12),
-                      if (product.repairLocations.isNotEmpty)
-                        _buildFeatureIndicator(
-                          Icons.build_circle_outlined,
-                          'Reparación',
-                          context,
-                        ),
-                    ],
                   ),
                 ],
               ),
@@ -220,25 +201,45 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureIndicator(
-    IconData icon,
-    String label,
-    BuildContext context,
-  ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: Theme.of(context).colorScheme.secondary),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.secondary,
-            fontWeight: FontWeight.w500,
-          ),
+  Widget _buildPlaceholder(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Icon(
+          product.isService
+              ? Icons.handyman_rounded
+              : Icons.inventory_2_rounded,
+          size: 48,
+          color: theme.colorScheme.outlineVariant,
         ),
-      ],
+      ),
     );
+  }
+
+  String _getCategory() {
+    if (product.isService && product.serviceCategory.isNotEmpty) {
+      return product.serviceCategory;
+    } else if (!product.isService && product.productCategory.isNotEmpty) {
+      return product.productCategory;
+    }
+    return '';
+  }
+
+  String _formatPrice(double price) {
+    if (price >= 1000000) {
+      return '${(price / 1000000).toStringAsFixed(1)}M';
+    } else if (price >= 1000) {
+      final formatted = price.toStringAsFixed(0);
+      final buffer = StringBuffer();
+      for (int i = 0; i < formatted.length; i++) {
+        if (i > 0 && (formatted.length - i) % 3 == 0) {
+          buffer.write('.');
+        }
+        buffer.write(formatted[i]);
+      }
+      return buffer.toString();
+    }
+    return price.toStringAsFixed(0);
   }
 }
