@@ -23,6 +23,12 @@ service cloud.firestore {
 
     match /businesses/{userId} {
       allow read, write: if isOwner(userId);
+      
+      // Subcolección de certificaciones del Pasaporte Digital
+      match /certifications/{certificationId} {
+        // Solo el propietario del negocio puede leer y escribir sus certificaciones
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // Productos: permitimos que la empresa (companyId) cree/edite sus productos
