@@ -22,12 +22,17 @@ service cloud.firestore {
     }
 
     match /businesses/{userId} {
-      allow read, write: if isOwner(userId);
+      // Permitir lectura a cualquier usuario autenticado (para búsqueda de empresas)
+      allow read: if isAuthenticated();
+      // Solo el propietario puede escribir
+      allow write: if isOwner(userId);
       
       // Subcolección de certificaciones del Pasaporte Digital
       match /certifications/{certificationId} {
-        // Solo el propietario del negocio puede leer y escribir sus certificaciones
-        allow read, write: if isOwner(userId);
+        // Permitir lectura a cualquier usuario autenticado
+        allow read: if isAuthenticated();
+        // Solo el propietario del negocio puede escribir sus certificaciones
+        allow write: if isOwner(userId);
       }
     }
 

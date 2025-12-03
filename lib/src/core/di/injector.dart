@@ -29,6 +29,9 @@ import 'package:flutter_app/src/features/products/data/repositories/products_rep
 import 'package:flutter_app/src/features/products/presentation/viewmodels/new_product_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/viewmodels/products_list_viewmodel.dart';
 
+// Companies list feature
+import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/companies_list_viewmodel.dart';
+
 List<SingleChildWidget> get providers {
   // Infrastructure
   final firebaseAuth = FirebaseAuth.instance;
@@ -77,6 +80,10 @@ List<SingleChildWidget> get providers {
     ),
     ChangeNotifierProvider(
       create: (_) => ProductsListViewModel(productsRepository),
+    ),
+    // Companies list
+    ChangeNotifierProvider(
+      create: (_) => CompaniesListViewModel(companyProfileRepository),
     ),
   ];
 }

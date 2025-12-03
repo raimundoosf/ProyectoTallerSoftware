@@ -1,4 +1,5 @@
 import 'package:flutter_app/src/features/company_profile/domain/entities/company_profile.dart';
+import 'package:flutter_app/src/features/company_profile/domain/entities/company_with_id.dart';
 
 typedef UploadProgressCallback = void Function(double progress);
 
@@ -12,4 +13,7 @@ abstract class CompanyProfileRepository {
   });
 
   Future<CompanyProfile?> getCompanyProfile(String userId);
+
+  /// Obtiene todas las empresas públicas (para búsqueda) junto con sus IDs
+  Future<List<CompanyWithId>> getAllCompanies();
 }

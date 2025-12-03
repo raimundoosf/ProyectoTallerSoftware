@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_app/src/features/company_profile/domain/entities/company_profile.dart';
+import 'package:flutter_app/src/features/company_profile/domain/entities/company_with_id.dart';
 import 'package:flutter_app/src/features/company_profile/domain/repositories/company_profile_repository.dart';
 
 class CompanyProfileRepositoryImpl implements CompanyProfileRepository {
@@ -125,5 +126,30 @@ class CompanyProfileRepositoryImpl implements CompanyProfileRepository {
     }
     _cache[userId] = null;
     return null;
+  }
+
+  @override
+  Future<List<CompanyWithId>> getAllCompanies() async {
+    try {
+      final snapshot = await _firestore
+          .collection('businesses')
+          .orderBy('companyName')
+          .get();
+
+      return snapshot.docs
+          .map((doc) {
+            try {
+              final profile = CompanyProfile.fromJson(doc.data());
+              return CompanyWithId(id: doc.id, profile: profile);
+            } catch (e) {
+              // Skip malformed documents
+              return null;
+            }
+          })
+          .whereType<CompanyWithId>()
+          .toList();
+    } catch (e) {
+      throw Exception('Error al cargar empresas: $e');
+    }
   }
 }

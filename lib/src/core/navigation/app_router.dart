@@ -6,6 +6,8 @@ import 'package:flutter_app/src/features/home/presentation/views/main_scaffold.d
 import 'package:flutter_app/src/features/user_profile/presentation/views/profile_screen.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_screen.dart';
 import 'package:flutter_app/src/features/products/presentation/views/new_product_view.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/views/companies_list_view.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/views/company_public_profile_view.dart';
 
 final GoRouter router = GoRouter(
   routes: <GoRoute>[
@@ -43,6 +45,22 @@ final GoRouter router = GoRouter(
       path: '/products/new',
       builder: (BuildContext context, GoRouterState state) {
         return const NewProductView();
+      },
+    ),
+    GoRoute(
+      path: '/companies',
+      builder: (BuildContext context, GoRouterState state) {
+        return Scaffold(
+          appBar: AppBar(title: const Text('Empresas'), elevation: 0),
+          body: const CompaniesListView(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/company/:companyId',
+      builder: (BuildContext context, GoRouterState state) {
+        final companyId = state.pathParameters['companyId']!;
+        return CompanyPublicProfileView(companyId: companyId);
       },
     ),
   ],

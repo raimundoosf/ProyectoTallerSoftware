@@ -33,6 +33,17 @@ class _HomeScreenState extends State<HomeScreen> {
             actions: [
               Semantics(
                 button: true,
+                label: 'Buscar empresas',
+                child: IconButton(
+                  icon: const Icon(Icons.business_outlined),
+                  tooltip: 'Buscar Empresas',
+                  onPressed: () {
+                    context.go('/companies');
+                  },
+                ),
+              ),
+              Semantics(
+                button: true,
                 label: 'Cerrar sesión',
                 child: IconButton(
                   icon: const Icon(Icons.logout),
