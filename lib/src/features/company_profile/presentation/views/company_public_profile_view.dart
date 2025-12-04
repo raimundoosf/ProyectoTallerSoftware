@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/views/company_products_list_view.dart';
@@ -107,7 +108,9 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.errorContainer.withOpacity(0.3),
+                      color: theme.colorScheme.errorContainer.withValues(
+                        alpha: 0.3,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -145,6 +148,17 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                 pinned: true,
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
+                leading: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_back_rounded, size: 20),
+                  ),
+                  onPressed: () => context.go('/companies'),
+                ),
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
@@ -171,7 +185,7 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                           height: 200,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
                         ),
                       ),
@@ -183,7 +197,7 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                           height: 150,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.08),
+                            color: Colors.white.withValues(alpha: 0.08),
                           ),
                         ),
                       ),
@@ -200,7 +214,9 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     ),
@@ -251,7 +267,9 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                                           vertical: 6,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.2,
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             20,
                                           ),
@@ -385,8 +403,8 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                           gradient: LinearGradient(
                             colors: [
                               theme.colorScheme.primaryContainer,
-                              theme.colorScheme.primaryContainer.withOpacity(
-                                0.7,
+                              theme.colorScheme.primaryContainer.withValues(
+                                alpha: 0.7,
                               ),
                             ],
                           ),
@@ -519,7 +537,9 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                           color: theme.colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: theme.colorScheme.outline.withOpacity(0.2),
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                         child: Row(
@@ -527,7 +547,7 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -632,7 +652,7 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.05),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -646,7 +666,9 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                  color: theme.colorScheme.primaryContainer.withValues(
+                    alpha: 0.5,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, size: 20, color: theme.colorScheme.primary),
@@ -682,7 +704,7 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: theme.colorScheme.outline.withOpacity(0.1),
+              color: theme.colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
         ),
@@ -691,7 +713,9 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.3,
+                ),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, size: 20, color: theme.colorScheme.primary),

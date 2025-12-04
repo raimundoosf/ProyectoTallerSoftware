@@ -62,7 +62,7 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.08),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -82,10 +82,12 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
                       : Colors.transparent,
                   width: 2,
                 ),
-                boxShadow: _isFocused
+                boxShadow: hasFilters
                     ? [
                         BoxShadow(
-                          color: theme.colorScheme.primary.withOpacity(0.1),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.3,
+                          ),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -99,7 +101,9 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
                 decoration: InputDecoration(
                   hintText: 'Buscar empresas...',
                   hintStyle: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.7,
+                    ),
                     fontSize: 15,
                   ),
                   prefixIcon: AnimatedContainer(
@@ -135,7 +139,7 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
                       : null,
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest
-                      .withOpacity(0.5),
+                      .withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 14,
@@ -163,7 +167,9 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
                   boxShadow: hasFilters
                       ? [
                           BoxShadow(
-                            color: theme.colorScheme.primary.withOpacity(0.3),
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
