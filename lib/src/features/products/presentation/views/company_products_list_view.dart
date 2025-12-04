@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_app/src/features/products/presentation/viewmodels/products_list_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/viewmodels/new_product_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/widgets/company_product_card.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_app/src/features/products/presentation/views/new_product
 import 'package:flutter_app/src/features/products/domain/entities/product.dart';
 
 /// View that displays a company's own products/services with edit and delete options.
+/// Edit and delete options are only shown if the current user owns the products.
 class CompanyProductsListView extends StatefulWidget {
   final String companyId;
 
@@ -18,6 +20,12 @@ class CompanyProductsListView extends StatefulWidget {
 }
 
 class _CompanyProductsListViewState extends State<CompanyProductsListView> {
+  /// Returns true if the current user is the owner of this company's products
+  bool get _isOwner {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    return currentUserId != null && currentUserId == widget.companyId;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -233,8 +241,11 @@ class _CompanyProductsListViewState extends State<CompanyProductsListView> {
               final product = vm.products[index];
               return CompanyProductCard(
                 product: product,
-                onEdit: () => _handleEdit(context, product),
-                onDelete: () => _handleDelete(context, product),
+                // Only show edit/delete options if user owns the products
+                onEdit: _isOwner ? () => _handleEdit(context, product) : null,
+                onDelete: _isOwner
+                    ? () => _handleDelete(context, product)
+                    : null,
               );
             },
           ),

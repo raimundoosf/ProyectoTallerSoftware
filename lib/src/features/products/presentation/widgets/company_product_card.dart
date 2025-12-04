@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/src/features/products/domain/entities/product.dart';
 
 /// Card widget for displaying a product in the company's own list
-/// with edit and delete actions.
+/// with optional edit and delete actions.
 class CompanyProductCard extends StatelessWidget {
   final Product product;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const CompanyProductCard({
     super.key,
     required this.product,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
+
+  /// Returns true if any action is available
+  bool get _hasActions => onEdit != null || onDelete != null;
 
   @override
   Widget build(BuildContext context) {
@@ -122,53 +125,57 @@ class CompanyProductCard extends StatelessWidget {
               ),
             ),
 
-            // Acciones
-            Container(
-              width: 48,
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.5,
+            // Acciones (solo si hay callbacks disponibles)
+            if (_hasActions)
+              Container(
+                width: 48,
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: onEdit,
-                      child: Center(
-                        child: Icon(
-                          Icons.edit_outlined,
-                          color: theme.colorScheme.primary,
-                          size: 20,
+                child: Column(
+                  children: [
+                    if (onEdit != null)
+                      Expanded(
+                        child: InkWell(
+                          onTap: onEdit,
+                          child: Center(
+                            child: Icon(
+                              Icons.edit_outlined,
+                              color: theme.colorScheme.primary,
+                              size: 20,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Divider(
-                    height: 1,
-                    color: theme.colorScheme.outlineVariant.withValues(
-                      alpha: 0.5,
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      onTap: onDelete,
-                      child: Center(
-                        child: Icon(
-                          Icons.delete_outline,
-                          color: theme.colorScheme.error,
-                          size: 20,
+                    if (onEdit != null && onDelete != null)
+                      Divider(
+                        height: 1,
+                        color: theme.colorScheme.outlineVariant.withValues(
+                          alpha: 0.5,
                         ),
                       ),
-                    ),
-                  ),
-                ],
+                    if (onDelete != null)
+                      Expanded(
+                        child: InkWell(
+                          onTap: onDelete,
+                          child: Center(
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: theme.colorScheme.error,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
