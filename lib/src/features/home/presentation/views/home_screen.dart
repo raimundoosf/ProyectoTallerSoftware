@@ -20,6 +20,9 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<HomeViewModel>().fetchUserRole();
@@ -42,31 +45,79 @@ class _HomeScreenState extends State<HomeScreen>
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Explorar'),
-            bottom: TabBar(
-              controller: _tabController,
-              indicatorColor: theme.colorScheme.primary,
-              indicatorWeight: 3,
-              labelColor: theme.colorScheme.primary,
-              unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-              labelStyle: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-              tabs: const [
-                Tab(
-                  icon: Icon(Icons.inventory_2_outlined),
-                  text: 'Publicaciones',
+            title: const Text(
+              'Explorar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            centerTitle: false,
+            elevation: 0,
+            scrolledUnderElevation: 2,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(56),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                    ),
+                  ),
                 ),
-                Tab(icon: Icon(Icons.business_outlined), text: 'Empresas'),
-              ],
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorColor: theme.colorScheme.primary,
+                  indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  labelColor: theme.colorScheme.primary,
+                  unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                  tabs: [
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _tabController.index == 0
+                                ? Icons.inventory_2_rounded
+                                : Icons.inventory_2_outlined,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Publicaciones'),
+                        ],
+                      ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _tabController.index == 1
+                                ? Icons.business_rounded
+                                : Icons.business_outlined,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Empresas'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             actions: [
-              Semantics(
-                button: true,
-                label: 'Cerrar sesión',
+              Container(
+                margin: const EdgeInsets.only(right: 8),
                 child: IconButton(
-                  icon: const Icon(Icons.logout),
+                  icon: const Icon(Icons.logout_rounded),
                   tooltip: 'Cerrar Sesión',
                   onPressed: () {
                     viewModel.signOut().then((_) {

@@ -151,7 +151,8 @@ class _ProductsListViewState extends State<ProductsListView> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      color: theme.colorScheme.surface,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -161,10 +162,10 @@ class _ProductsListViewState extends State<ProductsListView> {
             TextButton.icon(
               onPressed: viewModel.clearFilters,
               icon: const Icon(Icons.clear_all_rounded, size: 18),
-              label: const Text('Limpiar todo'),
+              label: const Text('Limpiar'),
               style: TextButton.styleFrom(
                 visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
             ),
           ],
@@ -180,16 +181,17 @@ class _ProductsListViewState extends State<ProductsListView> {
   ) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      child: InputChip(
+      child: Chip(
         label: Text(label),
+        deleteIcon: const Icon(Icons.close_rounded, size: 16),
         onDeleted: onRemove,
-        deleteIconColor: theme.colorScheme.primary,
-        labelStyle: TextStyle(fontSize: 12, color: theme.colorScheme.primary),
-        backgroundColor: theme.colorScheme.primaryContainer.withValues(
-          alpha: 0.5,
+        backgroundColor: theme.colorScheme.primaryContainer,
+        labelStyle: TextStyle(
+          color: theme.colorScheme.onPrimaryContainer,
+          fontSize: 12,
         ),
-        side: BorderSide.none,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        deleteIconColor: theme.colorScheme.onPrimaryContainer,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         visualDensity: VisualDensity.compact,
       ),
     );

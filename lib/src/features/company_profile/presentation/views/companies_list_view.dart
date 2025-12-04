@@ -169,7 +169,24 @@ class _CompaniesListViewState extends State<CompaniesListView> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       color: theme.colorScheme.surface,
-      child: Wrap(spacing: 8, runSpacing: 4, children: chips),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ...chips,
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: viewModel.clearFilters,
+              icon: const Icon(Icons.clear_all_rounded, size: 18),
+              label: const Text('Limpiar'),
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -178,27 +195,48 @@ class _CompaniesListViewState extends State<CompaniesListView> {
     String label,
     VoidCallback onRemove,
   ) {
-    return Chip(
-      label: Text(label),
-      deleteIcon: const Icon(Icons.close_rounded, size: 16),
-      onDeleted: onRemove,
-      backgroundColor: theme.colorScheme.primaryContainer,
-      labelStyle: TextStyle(
-        color: theme.colorScheme.onPrimaryContainer,
-        fontSize: 12,
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: Chip(
+        label: Text(label),
+        deleteIcon: const Icon(Icons.close_rounded, size: 16),
+        onDeleted: onRemove,
+        backgroundColor: theme.colorScheme.primaryContainer,
+        labelStyle: TextStyle(
+          color: theme.colorScheme.onPrimaryContainer,
+          fontSize: 12,
+        ),
+        deleteIconColor: theme.colorScheme.onPrimaryContainer,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        visualDensity: VisualDensity.compact,
       ),
-      deleteIconColor: theme.colorScheme.onPrimaryContainer,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      visualDensity: VisualDensity.compact,
     );
   }
 
   Widget _buildContent(ThemeData theme, CompaniesListViewModel viewModel) {
-    if (viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+    if (viewModel.isLoading && viewModel.companies.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              strokeWidth: 2,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Cargando empresas...',
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
-    if (viewModel.error != null) {
+    if (viewModel.error != null && viewModel.allCompanies.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -240,6 +278,49 @@ class _CompaniesListViewState extends State<CompaniesListView> {
                 onPressed: viewModel.loadAllCompanies,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Sin empresas registradas
+    if (viewModel.allCompanies.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.business_rounded,
+                  size: 56,
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No hay empresas',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Aún no hay empresas registradas.\nSé el primero en registrarte.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
               ),
             ],
           ),
