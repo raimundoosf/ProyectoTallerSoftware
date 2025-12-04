@@ -21,11 +21,18 @@ class CompanySearchBar extends StatefulWidget {
 
 class _CompanySearchBarState extends State<CompanySearchBar> {
   late TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
+  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.filter.searchQuery);
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
   }
 
   @override
@@ -39,6 +46,7 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -49,104 +57,162 @@ class _CompanySearchBarState extends State<CompanySearchBar> {
     final filterCount = widget.filter.activeFilterCount;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 4,
+            color: theme.colorScheme.shadow.withOpacity(0.08),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          // Campo de búsqueda
+          // Campo de búsqueda mejorado
           Expanded(
-            child: TextField(
-              controller: _controller,
-              onChanged: widget.onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Buscar empresas...',
-                hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 14,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _isFocused
+                      ? theme.colorScheme.primary
+                      : Colors.transparent,
+                  width: 2,
                 ),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: theme.colorScheme.onSurfaceVariant,
-                  size: 20,
-                ),
-                suffixIcon: _controller.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          size: 18,
-                          color: theme.colorScheme.onSurfaceVariant,
+                boxShadow: _isFocused
+                    ? [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                        onPressed: () {
-                          _controller.clear();
-                          widget.onSearchChanged('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                isDense: true,
+                      ]
+                    : [],
               ),
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: 14,
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                onChanged: widget.onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Buscar empresas...',
+                  hintStyle: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    fontSize: 15,
+                  ),
+                  prefixIcon: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: _isFocused
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
+                      size: 22,
+                    ),
+                  ),
+                  suffixIcon: _controller.text.isNotEmpty
+                      ? IconButton(
+                          icon: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 16,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          onPressed: () {
+                            _controller.clear();
+                            widget.onSearchChanged('');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withOpacity(0.5),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  isDense: true,
+                ),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface,
+                  fontSize: 15,
+                ),
               ),
             ),
           ),
           const SizedBox(width: 12),
-          // Botón de filtros
+          // Botón de filtros mejorado
           Stack(
             children: [
-              IconButton.filled(
-                onPressed: widget.onFilterTap,
-                icon: const Icon(Icons.tune_rounded, size: 20),
-                style: IconButton.styleFrom(
-                  backgroundColor: hasFilters
-                      ? theme.colorScheme.primaryContainer
-                      : theme.colorScheme.surfaceContainerHighest.withValues(
-                          alpha: 0.5,
-                        ),
-                  foregroundColor: hasFilters
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: hasFilters
+                      ? [
+                          BoxShadow(
+                            color: theme.colorScheme.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Material(
+                  color: hasFilters
                       ? theme.colorScheme.primary
-                      : theme.colorScheme.onSurfaceVariant,
+                      : theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    onTap: widget.onFilterTap,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Icon(
+                        Icons.tune_rounded,
+                        size: 22,
+                        color: hasFilters
+                            ? theme.colorScheme.onPrimary
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               if (filterCount > 0)
                 Positioned(
-                  right: 0,
-                  top: 0,
+                  right: -2,
+                  top: -2,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
+                      color: theme.colorScheme.error,
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.colorScheme.surface,
+                        width: 2,
+                      ),
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
+                      minWidth: 20,
+                      minHeight: 20,
                     ),
                     child: Text(
                       filterCount.toString(),
                       style: TextStyle(
-                        color: theme.colorScheme.onPrimary,
+                        color: theme.colorScheme.onError,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
