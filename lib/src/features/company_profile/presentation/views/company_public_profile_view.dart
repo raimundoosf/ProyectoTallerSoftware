@@ -157,7 +157,7 @@ class _CompanyPublicProfileViewState extends State<CompanyPublicProfileView>
                     ),
                     child: const Icon(Icons.arrow_back_rounded, size: 20),
                   ),
-                  onPressed: () => context.go('/companies'),
+                  onPressed: () => context.go('/'),
                 ),
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(

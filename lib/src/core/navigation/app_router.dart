@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_app/src/features/auth/presentation/views/login_screen.dart';
 import 'package:flutter_app/src/features/auth/presentation/views/register_screen.dart';
 import 'package:flutter_app/src/features/home/presentation/views/main_scaffold.dart';
-import 'package:flutter_app/src/features/company_profile/presentation/views/companies_list_view.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/views/company_public_profile_view.dart';
 
 final GoRouter router = GoRouter(
@@ -44,15 +43,6 @@ final GoRouter router = GoRouter(
           path: '/profile',
           builder: (BuildContext context, GoRouterState state) {
             return const MainScaffoldContent(tabIndex: 2);
-          },
-        ),
-        GoRoute(
-          path: '/companies',
-          builder: (BuildContext context, GoRouterState state) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('Empresas'), elevation: 0),
-              body: const CompaniesListView(),
-            );
           },
         ),
         GoRoute(
