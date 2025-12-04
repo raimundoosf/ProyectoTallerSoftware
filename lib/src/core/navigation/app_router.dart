@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_app/src/features/auth/presentation/views/login_screen.dart';
 import 'package:flutter_app/src/features/auth/presentation/views/register_screen.dart';
 import 'package:flutter_app/src/features/home/presentation/views/main_scaffold.dart';
-import 'package:flutter_app/src/features/company_profile/presentation/views/company_public_profile_view.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_view.dart';
 
 final GoRouter router = GoRouter(
   routes: <RouteBase>[
@@ -49,7 +49,7 @@ final GoRouter router = GoRouter(
           path: '/company/:companyId',
           builder: (BuildContext context, GoRouterState state) {
             final companyId = state.pathParameters['companyId']!;
-            return CompanyPublicProfileView(companyId: companyId);
+            return CompanyProfileView(companyId: companyId);
           },
         ),
       ],

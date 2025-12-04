@@ -15,12 +15,21 @@ class CompanyCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.08),
+        ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
+          ),
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -29,51 +38,76 @@ class CompanyCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
+          splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+          highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header con gradiente y logo
               Container(
-                height: 80,
+                height: 90,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      theme.colorScheme.primary.withValues(alpha: 0.8),
-                      theme.colorScheme.secondary.withValues(alpha: 0.6),
+                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withValues(alpha: 0.85),
+                      theme.colorScheme.secondary.withValues(alpha: 0.7),
                     ],
+                    stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    // Patrón decorativo
+                    // Patrón decorativo superior
                     Positioned(
-                      right: -20,
-                      top: -20,
+                      right: -30,
+                      top: -30,
                       child: Container(
-                        width: 100,
-                        height: 100,
+                        width: 120,
+                        height: 120,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.1),
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.15),
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Patrón decorativo inferior
+                    Positioned(
+                      left: -20,
+                      bottom: -20,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
                         ),
                       ),
                     ),
                     // Badge de industria
                     if (company.industry.isNotEmpty)
                       Positioned(
-                        right: 12,
-                        top: 12,
+                        right: 14,
+                        top: 14,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
+                            horizontal: 12,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
                           ),
                           child: Text(
                             company.industry,
@@ -81,42 +115,41 @@ class CompanyCard extends StatelessWidget {
                               fontSize: 11,
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ),
                       ),
                     // Logo posicionado
                     Positioned(
-                      left: 16,
-                      bottom: -30,
+                      left: 18,
+                      bottom: -32,
                       child: Container(
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
+                          color: theme.colorScheme.surface,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
                         child: CircleAvatar(
-                          radius: 36,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 33,
-                            backgroundColor: theme.colorScheme.primaryContainer,
-                            backgroundImage: company.logoUrl.isNotEmpty
-                                ? NetworkImage(company.logoUrl)
-                                : null,
-                            child: company.logoUrl.isEmpty
-                                ? Icon(
-                                    Icons.business_rounded,
-                                    size: 32,
-                                    color: theme.colorScheme.primary,
-                                  )
-                                : null,
-                          ),
+                          radius: 34,
+                          backgroundColor: theme.colorScheme.primaryContainer,
+                          backgroundImage: company.logoUrl.isNotEmpty
+                              ? NetworkImage(company.logoUrl)
+                              : null,
+                          child: company.logoUrl.isEmpty
+                              ? Icon(
+                                  Icons.business_rounded,
+                                  size: 34,
+                                  color: theme.colorScheme.primary,
+                                )
+                              : null,
                         ),
                       ),
                     ),
@@ -126,157 +159,139 @@ class CompanyCard extends StatelessWidget {
 
               // Contenido
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                padding: const EdgeInsets.fromLTRB(18, 44, 18, 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Nombre
+                    // Nombre con icono de certificación
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            company.companyName,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  company.companyName,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (company.certifications.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.verified,
+                                    size: 18,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 16,
-                          color: theme.colorScheme.primary,
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                       ],
                     ),
 
                     // Descripción
                     if (company.companyDescription.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Text(
                         company.companyDescription,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
-                          height: 1.4,
+                          height: 1.5,
+                          letterSpacing: 0.1,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
 
-                    // Info pills
-                    Row(
-                      children: [
-                        // Cobertura
-                        _buildInfoPill(
-                          theme,
-                          _getCoverageIcon(company.coverageLevel),
-                          _getCoverageText(company),
-                          theme.colorScheme.secondaryContainer,
-                          theme.colorScheme.onSecondaryContainer,
+                    // Info de cobertura
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.colorScheme.secondaryContainer.withValues(
+                              alpha: 0.5,
+                            ),
+                            theme.colorScheme.secondaryContainer.withValues(
+                              alpha: 0.3,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        // Año
-                        if (company.foundedYear > 0)
-                          _buildInfoPill(
-                            theme,
-                            Icons.calendar_today_outlined,
-                            'Desde ${company.foundedYear}',
-                            theme.colorScheme.tertiaryContainer,
-                            theme.colorScheme.onTertiaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.colorScheme.secondary.withValues(
+                            alpha: 0.15,
                           ),
-                      ],
-                    ),
-
-                    // Certificaciones
-                    if (company.certifications.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: company.certifications
-                              .take(3)
-                              .map(
-                                (cert) => Container(
-                                  margin: const EdgeInsets.only(right: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.green.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.verified,
-                                        size: 14,
-                                        color: Colors.green,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        cert['name'] ?? '',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                              .toList(),
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.secondary.withValues(
+                                alpha: 0.15,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              _getCoverageIcon(company.coverageLevel),
+                              size: 14,
+                              color: theme.colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _getCoverageText(company),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.colorScheme.onSecondaryContainer,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoPill(
-    ThemeData theme,
-    IconData icon,
-    String text,
-    Color backgroundColor,
-    Color foregroundColor,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: backgroundColor.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: foregroundColor),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 11,
-              color: foregroundColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -296,15 +311,19 @@ class CompanyCard extends StatelessWidget {
 
   String _getCoverageText(CompanyProfile company) {
     if (company.coverageLevel == 'Nacional') {
-      return 'Nacional';
+      return 'Cobertura Nacional';
     } else if (company.coverageLevel == 'Regional') {
-      final count = company.coverageRegions.length;
-      if (count == 0) return 'Regional';
-      return '$count ${count == 1 ? 'región' : 'regiones'}';
+      if (company.coverageRegions.isEmpty) return 'Regional';
+      if (company.coverageRegions.length == 1) {
+        return company.coverageRegions.first;
+      }
+      return '${company.coverageRegions.first} +${company.coverageRegions.length - 1}';
     } else if (company.coverageLevel == 'Comunal') {
-      final count = company.coverageCommunes.length;
-      if (count == 0) return 'Comunal';
-      return '$count ${count == 1 ? 'comuna' : 'comunas'}';
+      if (company.coverageCommunes.isEmpty) return 'Comunal';
+      if (company.coverageCommunes.length == 1) {
+        return company.coverageCommunes.first;
+      }
+      return '${company.coverageCommunes.first} +${company.coverageCommunes.length - 1}';
     }
     return 'Sin especificar';
   }

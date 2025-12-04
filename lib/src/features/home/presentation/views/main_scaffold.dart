@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/home/presentation/views/home_screen.dart';
 import 'package:flutter_app/src/features/products/presentation/views/new_product_view.dart';
 import 'package:flutter_app/src/features/user_profile/presentation/views/profile_screen.dart';
-import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_screen.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_view.dart';
 import 'package:flutter_app/src/features/home/presentation/viewmodels/home_viewmodel.dart';
 
 /// Widget que envuelve el contenido con la barra de navegación inferior.
@@ -156,7 +156,8 @@ class MainScaffoldContent extends StatelessWidget {
             }
           case 2:
             if (userRole == 'Empresa') {
-              return const CompanyProfileScreen();
+              final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+              return CompanyProfileView(companyId: userId);
             } else {
               return const ProfileScreen();
             }
@@ -230,13 +231,14 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   List<Widget> _getScreens() {
     if (_userRole == 'Empresa') {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       return [
         const HomeScreen(),
         NewProductView(
           onCancel: () => _navigateToIndex(0),
           onPublishSuccess: () => _navigateToIndex(2),
         ),
-        const CompanyProfileScreen(),
+        CompanyProfileView(companyId: userId),
       ];
     } else {
       return [
