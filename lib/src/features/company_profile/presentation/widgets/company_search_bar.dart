@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/src/features/products/domain/entities/product_filter.dart';
+import 'package:flutter_app/src/features/company_profile/domain/entities/company_filter.dart';
 
-class ProductSearchBar extends StatefulWidget {
-  final ProductFilter filter;
+class CompanySearchBar extends StatefulWidget {
+  final CompanyFilter filter;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onFilterTap;
   final VoidCallback? onClearFilters;
 
-  const ProductSearchBar({
+  const CompanySearchBar({
     super.key,
     required this.filter,
     required this.onSearchChanged,
@@ -16,10 +16,10 @@ class ProductSearchBar extends StatefulWidget {
   });
 
   @override
-  State<ProductSearchBar> createState() => _ProductSearchBarState();
+  State<CompanySearchBar> createState() => _CompanySearchBarState();
 }
 
-class _ProductSearchBarState extends State<ProductSearchBar> {
+class _CompanySearchBarState extends State<CompanySearchBar> {
   late TextEditingController _controller;
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
@@ -36,7 +36,7 @@ class _ProductSearchBarState extends State<ProductSearchBar> {
   }
 
   @override
-  void didUpdateWidget(ProductSearchBar oldWidget) {
+  void didUpdateWidget(CompanySearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.filter.searchQuery != _controller.text) {
       _controller.text = widget.filter.searchQuery;
@@ -70,7 +70,7 @@ class _ProductSearchBarState extends State<ProductSearchBar> {
       ),
       child: Row(
         children: [
-          // Campo de búsqueda
+          // Campo de búsqueda mejorado
           Expanded(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -82,13 +82,24 @@ class _ProductSearchBarState extends State<ProductSearchBar> {
                       : Colors.transparent,
                   width: 2,
                 ),
+                boxShadow: hasFilters
+                    ? [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.3,
+                          ),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [],
               ),
               child: TextField(
                 controller: _controller,
                 focusNode: _focusNode,
                 onChanged: widget.onSearchChanged,
                 decoration: InputDecoration(
-                  hintText: 'Buscar productos o servicios...',
+                  hintText: 'Buscar empresas...',
                   hintStyle: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant.withValues(
                       alpha: 0.7,
@@ -147,7 +158,7 @@ class _ProductSearchBarState extends State<ProductSearchBar> {
             ),
           ),
           const SizedBox(width: 12),
-          // Botón de filtros
+          // Botón de filtros mejorado
           Stack(
             children: [
               Container(

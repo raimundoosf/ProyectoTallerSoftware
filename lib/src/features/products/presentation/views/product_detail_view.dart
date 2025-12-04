@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/features/products/domain/entities/product.dart';
 import 'package:flutter_app/src/features/company_profile/domain/entities/company_profile.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
@@ -810,7 +811,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
   void _navigateToCompanyProfile(BuildContext context, String companyId) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => _CompanyProfileViewWrapper(companyId: companyId),
+        builder: (context) => CompanyProfileView(companyId: companyId),
       ),
     );
   }
@@ -880,190 +881,5 @@ class _ProductDetailViewState extends State<ProductDetailView> {
       return 'Cobertura en $count ${count == 1 ? 'comuna' : 'comunas'}';
     }
     return 'Cobertura no especificada';
-  }
-}
-
-/// Widget para mostrar el perfil de empresa en modo solo lectura
-class _CompanyProfileViewWrapper extends StatefulWidget {
-  final String companyId;
-
-  const _CompanyProfileViewWrapper({required this.companyId});
-
-  @override
-  State<_CompanyProfileViewWrapper> createState() =>
-      _CompanyProfileViewWrapperState();
-}
-
-class _CompanyProfileViewWrapperState
-    extends State<_CompanyProfileViewWrapper> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CompanyProfileViewModel>().loadCompanyProfile(
-        widget.companyId,
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CompanyProfileViewModel>(
-      builder: (context, viewModel, child) {
-        final company = viewModel.companyProfile;
-
-        if (viewModel.isLoading) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Perfil de Empresa')),
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (company == null) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Perfil de Empresa')),
-            body: const Center(child: Text('No se pudo cargar la información')),
-          );
-        }
-
-        return Scaffold(
-          appBar: AppBar(title: Text(company.companyName)),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header con logo y nombre
-                Center(
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.grey[200],
-                        backgroundImage: company.logoUrl.isNotEmpty
-                            ? NetworkImage(company.logoUrl)
-                            : null,
-                        child: company.logoUrl.isEmpty
-                            ? Icon(
-                                Icons.business,
-                                size: 50,
-                                color: Colors.grey[600],
-                              )
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        company.companyName,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (company.industry.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          company.industry,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Descripción
-                if (company.companyDescription.isNotEmpty) ...[
-                  Text(
-                    'Descripción',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(company.companyDescription),
-                  const SizedBox(height: 24),
-                ],
-
-                // Información de contacto
-                if (company.email.isNotEmpty ||
-                    company.phone.isNotEmpty ||
-                    company.website.isNotEmpty) ...[
-                  Text(
-                    'Contacto',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (company.email.isNotEmpty)
-                    ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.email_outlined),
-                      title: Text(company.email),
-                    ),
-                  if (company.phone.isNotEmpty)
-                    ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.phone_outlined),
-                      title: Text(company.phone),
-                    ),
-                  if (company.website.isNotEmpty)
-                    ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.language),
-                      title: Text(
-                        company.website,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      onTap: () async {
-                        var url = company.website;
-                        if (!url.startsWith('http')) url = 'https://$url';
-                        final uri = Uri.parse(url);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(
-                            uri,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        }
-                      },
-                    ),
-                  const SizedBox(height: 24),
-                ],
-
-                // Certificaciones
-                if (company.certifications.isNotEmpty) ...[
-                  Text(
-                    'Certificaciones',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: company.certifications.map((cert) {
-                      final name = cert['name'] ?? '';
-                      return Chip(
-                        avatar: const Icon(Icons.verified, size: 18),
-                        label: Text(name),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 }

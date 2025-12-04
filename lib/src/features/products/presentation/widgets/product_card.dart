@@ -15,12 +15,21 @@ class ProductCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.08),
+        ),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: theme.colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+            spreadRadius: -2,
+          ),
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -39,13 +48,16 @@ class ProductCard extends StatelessWidget {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
+        splashColor: theme.colorScheme.primary.withValues(alpha: 0.08),
+        highlightColor: theme.colorScheme.primary.withValues(alpha: 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen con badge de tipo
+            // Header con imagen y gradiente overlay
             Stack(
               children: [
+                // Imagen
                 if (product.imageUrls.isNotEmpty)
                   Hero(
                     tag: 'product-image-${product.id}',
@@ -81,21 +93,88 @@ class ProductCard extends StatelessWidget {
                     tag: 'product-image-${product.id}',
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
-                      child: _buildPlaceholder(context),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              theme.colorScheme.primary,
+                              theme.colorScheme.primary.withValues(alpha: 0.85),
+                              theme.colorScheme.secondary.withValues(
+                                alpha: 0.7,
+                              ),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            // Patrón decorativo superior
+                            Positioned(
+                              right: -40,
+                              top: -40,
+                              child: Container(
+                                width: 140,
+                                height: 140,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.white.withValues(alpha: 0.15),
+                                      Colors.white.withValues(alpha: 0.0),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Patrón decorativo inferior
+                            Positioned(
+                              left: -20,
+                              bottom: -20,
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Icon(
+                                product.isService
+                                    ? Icons.handyman_rounded
+                                    : Icons.inventory_2_rounded,
+                                size: 60,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                // Badge de tipo
+
+                // Badge de tipo (arriba izquierda)
                 Positioned(
                   top: 12,
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
+                      horizontal: 12,
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface.withValues(alpha: 0.95),
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -107,7 +186,7 @@ class ProductCard extends StatelessWidget {
                           size: 14,
                           color: theme.colorScheme.primary,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
                           product.isService ? 'Servicio' : 'Producto',
                           style: TextStyle(
@@ -120,77 +199,162 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                // Badge de categoría (arriba derecha)
+                if (_getCategory().isNotEmpty)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      child: Text(
+                        _getCategory(),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
 
             // Contenido
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(18.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Nombre con certificación y categoría
+                  // Nombre con certificación y flecha
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          product.name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                product.name,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.2,
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (product.certifications.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.verified,
+                                  size: 18,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      if (product.certifications.isNotEmpty) ...[
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.verified_rounded,
-                          size: 18,
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
                           color: theme.colorScheme.primary,
                         ),
-                      ],
+                      ),
                     ],
                   ),
 
-                  // Categoría debajo del nombre
-                  if (_getCategory().isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        _getCategory(),
-                        style: TextStyle(
-                          color: theme.colorScheme.outline,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                  // Precio o botón de cotización
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
                     ),
-                  const SizedBox(height: 8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primary.withValues(alpha: 0.85),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.3,
+                          ),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          product.priceOnRequest
+                              ? Icons.request_quote_outlined
+                              : Icons.payments_outlined,
+                          size: 16,
+                          color: theme.colorScheme.onPrimary,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          product.priceOnRequest
+                              ? 'Solicitar Cotización'
+                              : '\$${_formatPrice(product.price)}',
+                          style: TextStyle(
+                            color: theme.colorScheme.onPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
 
                   // Descripción
                   Text(
                     product.description,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
-                      height: 1.4,
+                      height: 1.5,
+                      letterSpacing: 0.1,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Precio
-                  Text(
-                    product.priceOnRequest
-                        ? 'Solicitar cotización'
-                        : '\$${_formatPrice(product.price)}',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
                   ),
                 ],
               ),
@@ -204,15 +368,59 @@ class ProductCard extends StatelessWidget {
   Widget _buildPlaceholder(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      color: theme.colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: Icon(
-          product.isService
-              ? Icons.handyman_rounded
-              : Icons.inventory_2_rounded,
-          size: 48,
-          color: theme.colorScheme.outlineVariant,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.primary.withValues(alpha: 0.85),
+            theme.colorScheme.secondary.withValues(alpha: 0.7),
+          ],
+          stops: const [0.0, 0.5, 1.0],
         ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -40,
+            top: -40,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.15),
+                    Colors.white.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: -20,
+            bottom: -20,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Center(
+            child: Icon(
+              product.isService
+                  ? Icons.handyman_rounded
+                  : Icons.inventory_2_rounded,
+              size: 60,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
       ),
     );
   }

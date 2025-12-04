@@ -1,35 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_app/src/features/products/domain/entities/product_filter.dart';
-import 'package:flutter_app/src/features/products/presentation/viewmodels/products_list_viewmodel.dart';
-import 'package:flutter_app/src/features/products/presentation/widgets/product_card.dart';
-import 'package:flutter_app/src/features/products/presentation/widgets/product_search_bar.dart';
-import 'package:flutter_app/src/features/products/presentation/widgets/product_filter_sheet.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_app/src/features/company_profile/domain/entities/company_filter.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/companies_list_viewmodel.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/widgets/company_search_bar.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/widgets/company_filter_sheet.dart';
+import 'package:flutter_app/src/features/company_profile/presentation/widgets/company_card.dart';
 
-class ProductsListView extends StatefulWidget {
-  const ProductsListView({super.key});
+class CompaniesListView extends StatefulWidget {
+  const CompaniesListView({super.key});
 
   @override
-  State<ProductsListView> createState() => _ProductsListViewState();
+  State<CompaniesListView> createState() => _CompaniesListViewState();
 }
 
-class _ProductsListViewState extends State<ProductsListView> {
+class _CompaniesListViewState extends State<CompaniesListView> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductsListViewModel>().loadAllProducts();
+      context.read<CompaniesListViewModel>().loadAllCompanies();
     });
   }
 
-  void _showFilterSheet(BuildContext context, ProductsListViewModel viewModel) {
-    showModalBottomSheet<ProductFilter>(
+  void _showFilterSheet(
+    BuildContext context,
+    CompaniesListViewModel viewModel,
+  ) {
+    showModalBottomSheet<CompanyFilter>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ProductFilterSheet(
+      builder: (context) => CompanyFilterSheet(
         initialFilter: viewModel.filter,
-        availableCategories: viewModel.getAvailableCategories(),
+        availableIndustries: viewModel.getAvailableIndustries(),
       ),
     ).then((result) {
       if (result != null) {
@@ -42,12 +46,12 @@ class _ProductsListViewState extends State<ProductsListView> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Consumer<ProductsListViewModel>(
+    return Consumer<CompaniesListViewModel>(
       builder: (context, viewModel, child) {
         return Column(
           children: [
             // Barra de búsqueda
-            ProductSearchBar(
+            CompanySearchBar(
               filter: viewModel.filter,
               onSearchChanged: viewModel.updateSearchQuery,
               onFilterTap: () => _showFilterSheet(context, viewModel),
@@ -70,81 +74,93 @@ class _ProductsListViewState extends State<ProductsListView> {
 
   Widget _buildActiveFiltersBar(
     ThemeData theme,
-    ProductsListViewModel viewModel,
+    CompaniesListViewModel viewModel,
   ) {
     final filter = viewModel.filter;
     final chips = <Widget>[];
 
-    if (filter.typeFilter != ProductTypeFilter.all) {
+    if (filter.industry != null) {
       chips.add(
         _buildFilterChip(
           theme,
-          filter.typeFilter.label,
-          () => viewModel.updateFilter(
-            filter.copyWith(typeFilter: ProductTypeFilter.all),
-          ),
+          filter.industry!,
+          () => viewModel.updateFilter(filter.copyWith(clearIndustry: true)),
         ),
       );
     }
 
-    if (filter.category != null) {
+    if (filter.coverageLevel != null) {
       chips.add(
         _buildFilterChip(
           theme,
-          filter.category!,
-          () => viewModel.updateFilter(filter.copyWith(clearCategory: true)),
+          filter.coverageLevel!,
+          () =>
+              viewModel.updateFilter(filter.copyWith(clearCoverageLevel: true)),
         ),
       );
     }
 
-    if (filter.minPrice != null || filter.maxPrice != null) {
-      String priceLabel;
-      if (filter.minPrice != null && filter.maxPrice != null) {
-        priceLabel =
-            '\$${filter.minPrice!.toInt()} - \$${filter.maxPrice!.toInt()}';
-      } else if (filter.minPrice != null) {
-        priceLabel = 'Desde \$${filter.minPrice!.toInt()}';
+    if (filter.coverageRegions.isNotEmpty) {
+      for (final region in filter.coverageRegions) {
+        chips.add(
+          _buildFilterChip(theme, region, () {
+            final newRegions = List<String>.from(filter.coverageRegions)
+              ..remove(region);
+            viewModel.updateFilter(
+              filter.copyWith(coverageRegions: newRegions),
+            );
+          }),
+        );
+      }
+    }
+
+    if (filter.certifications.isNotEmpty) {
+      for (final cert in filter.certifications) {
+        chips.add(
+          _buildFilterChip(theme, cert, () {
+            final newCerts = List<String>.from(filter.certifications)
+              ..remove(cert);
+            viewModel.updateFilter(filter.copyWith(certifications: newCerts));
+          }),
+        );
+      }
+    }
+
+    if (filter.minEmployees != null || filter.maxEmployees != null) {
+      String label;
+      if (filter.minEmployees != null && filter.maxEmployees != null) {
+        label = '${filter.minEmployees}-${filter.maxEmployees} empleados';
+      } else if (filter.minEmployees != null) {
+        label = 'Desde ${filter.minEmployees} empleados';
       } else {
-        priceLabel = 'Hasta \$${filter.maxPrice!.toInt()}';
+        label = 'Hasta ${filter.maxEmployees} empleados';
       }
       chips.add(
         _buildFilterChip(
           theme,
-          priceLabel,
-          () => viewModel.updateFilter(filter.copyWith(clearPriceRange: true)),
-        ),
-      );
-    }
-
-    if (filter.condition != null) {
-      chips.add(
-        _buildFilterChip(
-          theme,
-          filter.condition!,
-          () => viewModel.updateFilter(filter.copyWith(clearCondition: true)),
-        ),
-      );
-    }
-
-    if (filter.serviceModality != null) {
-      chips.add(
-        _buildFilterChip(
-          theme,
-          filter.serviceModality!,
-          () => viewModel.updateFilter(
-            filter.copyWith(clearServiceModality: true),
-          ),
-        ),
-      );
-    }
-
-    if (filter.certification != null) {
-      chips.add(
-        _buildFilterChip(
-          theme,
-          filter.certification!,
+          label,
           () =>
-              viewModel.updateFilter(filter.copyWith(clearCertification: true)),
+              viewModel.updateFilter(filter.copyWith(clearEmployeeRange: true)),
+        ),
+      );
+    }
+
+    if (filter.minFoundedYear != null || filter.maxFoundedYear != null) {
+      String label;
+      if (filter.minFoundedYear != null && filter.maxFoundedYear != null) {
+        label = '${filter.minFoundedYear}-${filter.maxFoundedYear}';
+      } else if (filter.minFoundedYear != null) {
+        label = 'Desde ${filter.minFoundedYear}';
+      } else {
+        label = 'Hasta ${filter.maxFoundedYear}';
+      }
+      chips.add(
+        _buildFilterChip(
+          theme,
+          label,
+          () => viewModel.updateFilter(
+            filter.copyWith(clearFoundedYearRange: true),
+          ),
         ),
       );
     }
@@ -197,8 +213,8 @@ class _ProductsListViewState extends State<ProductsListView> {
     );
   }
 
-  Widget _buildContent(ThemeData theme, ProductsListViewModel viewModel) {
-    if (viewModel.isLoading && viewModel.products.isEmpty) {
+  Widget _buildContent(ThemeData theme, CompaniesListViewModel viewModel) {
+    if (viewModel.isLoading && viewModel.companies.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -209,7 +225,7 @@ class _ProductsListViewState extends State<ProductsListView> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Cargando publicaciones...',
+              'Cargando empresas...',
               style: TextStyle(
                 color: theme.colorScheme.onSurfaceVariant,
                 fontSize: 14,
@@ -220,7 +236,7 @@ class _ProductsListViewState extends State<ProductsListView> {
       );
     }
 
-    if (viewModel.error != null && viewModel.allProducts.isEmpty) {
+    if (viewModel.error != null && viewModel.allCompanies.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -228,7 +244,7 @@ class _ProductsListViewState extends State<ProductsListView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer.withValues(
                     alpha: 0.3,
@@ -236,18 +252,17 @@ class _ProductsListViewState extends State<ProductsListView> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.cloud_off_rounded,
+                  Icons.error_outline_rounded,
                   size: 48,
                   color: theme.colorScheme.error,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'No se pudieron cargar las publicaciones',
+                'Error al cargar',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
@@ -260,7 +275,7 @@ class _ProductsListViewState extends State<ProductsListView> {
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed: () => viewModel.loadAllProducts(),
+                onPressed: viewModel.loadAllCompanies,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: const Text('Reintentar'),
               ),
@@ -270,7 +285,8 @@ class _ProductsListViewState extends State<ProductsListView> {
       );
     }
 
-    if (viewModel.allProducts.isEmpty) {
+    // Sin empresas registradas
+    if (viewModel.allCompanies.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -284,21 +300,21 @@ class _ProductsListViewState extends State<ProductsListView> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.storefront_rounded,
+                  Icons.business_rounded,
                   size: 56,
                   color: theme.colorScheme.outline,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'No hay publicaciones',
+                'No hay empresas',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Aún no hay productos o servicios publicados.\nSé el primero en publicar.',
+                'Aún no hay empresas registradas.\nSé el primero en registrarte.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -313,7 +329,7 @@ class _ProductsListViewState extends State<ProductsListView> {
     }
 
     // Lista vacía después de aplicar filtros
-    if (viewModel.products.isEmpty) {
+    if (viewModel.companies.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -341,7 +357,7 @@ class _ProductsListViewState extends State<ProductsListView> {
               ),
               const SizedBox(height: 8),
               Text(
-                'No se encontraron productos o servicios\nque coincidan con tu búsqueda.',
+                'No se encontraron empresas\nque coincidan con tu búsqueda.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -349,12 +365,14 @@ class _ProductsListViewState extends State<ProductsListView> {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 24),
-              OutlinedButton.icon(
-                onPressed: viewModel.clearAll,
-                icon: const Icon(Icons.clear_all_rounded, size: 18),
-                label: const Text('Limpiar filtros'),
-              ),
+              if (viewModel.filter.hasActiveFilters) ...[
+                const SizedBox(height: 24),
+                OutlinedButton.icon(
+                  onPressed: viewModel.clearAll,
+                  icon: const Icon(Icons.clear_all_rounded, size: 18),
+                  label: const Text('Limpiar filtros'),
+                ),
+              ],
             ],
           ),
         ),
@@ -372,7 +390,7 @@ class _ProductsListViewState extends State<ProductsListView> {
             child: Row(
               children: [
                 Text(
-                  '${viewModel.products.length} resultado${viewModel.products.length != 1 ? 's' : ''}',
+                  '${viewModel.companies.length} empresa${viewModel.companies.length != 1 ? 's' : ''}',
                   style: TextStyle(
                     color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 13,
@@ -381,24 +399,31 @@ class _ProductsListViewState extends State<ProductsListView> {
                 if (viewModel.filter.searchQuery.isNotEmpty ||
                     viewModel.filter.hasActiveFilters) ...[
                   Text(
-                    ' de ${viewModel.allProducts.length}',
+                    ' de ${viewModel.allCompanies.length}',
                     style: TextStyle(
                       color: theme.colorScheme.onSurfaceVariant,
                       fontSize: 13,
+                      fontWeight: FontWeight.w300,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          // Lista de productos
+
+          // Lista de empresas
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(bottom: 16),
-              itemCount: viewModel.products.length,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              itemCount: viewModel.companies.length,
               itemBuilder: (context, index) {
-                final product = viewModel.products[index];
-                return ProductCard(product: product);
+                final companyWithId = viewModel.companies[index];
+                return CompanyCard(
+                  company: companyWithId.profile,
+                  onTap: () {
+                    context.go('/company/${companyWithId.id}');
+                  },
+                );
               },
             ),
           ),

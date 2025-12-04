@@ -72,5 +72,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'tallersoftware-ab7d6.firebasestorage.app',
     iosBundleId: 'com.example.flutterApp',
   );
-
 }
