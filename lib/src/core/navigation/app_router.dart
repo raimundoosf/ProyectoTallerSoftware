@@ -59,6 +59,12 @@ final GoRouter router = GoRouter(
           },
         ),
         GoRoute(
+          path: '/contacts',
+          builder: (BuildContext context, GoRouterState state) {
+            return const MainScaffoldContent(tabIndex: 1);
+          },
+        ),
+        GoRoute(
           path: '/profile',
           builder: (BuildContext context, GoRouterState state) {
             return const MainScaffoldContent(tabIndex: 2);

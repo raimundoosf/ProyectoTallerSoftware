@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
 import 'package:flutter_app/src/features/contact/presentation/views/contact_form_view.dart';
+import 'package:flutter_app/src/features/home/presentation/viewmodels/home_viewmodel.dart';
 
 class ProductDetailView extends StatefulWidget {
   final Product product;
@@ -818,9 +819,15 @@ class _ProductDetailViewState extends State<ProductDetailView> {
   }
 
   Widget _buildContactButton() {
-    return Consumer<CompanyProfileViewModel>(
-      builder: (context, viewModel, child) {
+    return Consumer2<CompanyProfileViewModel, HomeViewModel>(
+      builder: (context, viewModel, homeVm, child) {
         final company = viewModel.companyProfile;
+
+        // Solo mostrar botón de contacto para usuarios Consumidor
+        if (homeVm.currentRole != 'Consumidor') {
+          return const SizedBox.shrink();
+        }
+
         if (company == null || company.email.isEmpty) {
           return const SizedBox.shrink();
         }

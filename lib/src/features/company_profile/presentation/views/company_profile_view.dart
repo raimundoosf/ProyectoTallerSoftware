@@ -9,6 +9,7 @@ import 'package:flutter_app/src/features/company_profile/domain/constants/busine
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/views/company_products_list_view.dart';
 import 'package:flutter_app/src/features/contact/presentation/views/contact_form_view.dart';
+import 'package:flutter_app/src/features/home/presentation/viewmodels/home_viewmodel.dart';
 
 /// Vista unificada del perfil de empresa
 /// Muestra el perfil de cualquier empresa con opciones de edición cuando es el perfil propio
@@ -246,26 +247,34 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
             ]
           : !_isOwner && profile != null && profile.email.isNotEmpty
           ? [
-              IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.email_outlined, size: 20),
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ContactFormView(
-                        companyId: widget.companyId,
-                        companyName: profile.companyName,
+              // Solo mostrar botón de contacto para usuarios Consumidor
+              Consumer<HomeViewModel>(
+                builder: (context, homeVm, child) {
+                  if (homeVm.currentRole != 'Consumidor') {
+                    return const SizedBox.shrink();
+                  }
+                  return IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(Icons.email_outlined, size: 20),
                     ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ContactFormView(
+                            companyId: widget.companyId,
+                            companyName: profile.companyName,
+                          ),
+                        ),
+                      );
+                    },
+                    tooltip: 'Contactar empresa',
                   );
                 },
-                tooltip: 'Contactar empresa',
               ),
             ]
           : null,

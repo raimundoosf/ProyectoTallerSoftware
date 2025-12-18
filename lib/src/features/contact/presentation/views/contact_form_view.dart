@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_app/src/features/contact/presentation/viewmodels/contact_viewmodel.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
+import 'package:flutter_app/src/features/user_profile/presentation/viewmodels/profile_viewmodel.dart';
 
 class ContactFormView extends StatefulWidget {
   final String companyId;
@@ -43,7 +45,49 @@ class _ContactFormViewState extends State<ContactFormView> {
         vm.setSubject(defaultSubject);
         _subjectController.text = defaultSubject;
       }
+
+      // Cargar el perfil del usuario actual para la firma
+      _loadUserProfile();
     });
+  }
+
+  Future<void> _loadUserProfile() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final profileVm = context.read<ProfileViewModel>();
+      await profileVm.loadUserProfile(currentUser.uid);
+    }
+  }
+
+  /// Construye la firma del usuario para el correo
+  String _buildUserSignature() {
+    final profileVm = context.read<ProfileViewModel>();
+    final userProfile = profileVm.userProfile;
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    final buffer = StringBuffer();
+    buffer.writeln('\n\n---');
+    buffer.writeln('Atte.,');
+
+    // Nombre del usuario
+    if (userProfile != null && userProfile.name.isNotEmpty) {
+      buffer.writeln(userProfile.name);
+    } else if (currentUser?.displayName != null &&
+        currentUser!.displayName!.isNotEmpty) {
+      buffer.writeln(currentUser.displayName);
+    }
+
+    // Cargo (si existe)
+    if (userProfile?.position != null && userProfile!.position!.isNotEmpty) {
+      buffer.writeln(userProfile.position);
+    }
+
+    // Empresa del usuario (si existe)
+    if (userProfile?.company != null && userProfile!.company!.isNotEmpty) {
+      buffer.writeln(userProfile.company);
+    }
+
+    return buffer.toString();
   }
 
   @override
@@ -103,20 +147,43 @@ class _ContactFormViewState extends State<ContactFormView> {
     }
 
     // Construir el cuerpo del email
-    final subject = Uri.encodeComponent(vm.subject);
+    final subjectText = vm.subject;
     String body = vm.message;
 
-    // Agregar información de contexto al mensaje
+    // Agregar información del producto si existe
     if (widget.productName != null) {
-      body = 'Producto: ${widget.productName}\n\n$body';
+      body = 'Consulta sobre: ${widget.productName}\n\n$body';
     }
-    body = '$body\n\n---\nEmpresa: ${widget.companyName}';
 
-    final encodedBody = Uri.encodeComponent(body);
+    // Agregar la firma del usuario comprador
+    body = '$body${_buildUserSignature()}';
+
+    // Guardar el mensaje de contacto en Firestore
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final profileVm = context.read<ProfileViewModel>();
+      final userProfile = profileVm.userProfile;
+
+      final senderName =
+          userProfile?.name ?? currentUser.displayName ?? 'Usuario';
+      final senderEmail = currentUser.email ?? '';
+
+      await vm.sendMessage(
+        senderUserId: currentUser.uid,
+        senderName: senderName,
+        senderEmail: senderEmail,
+        recipientCompanyId: widget.companyId,
+        recipientCompanyName: widget.companyName,
+        productId: widget.productId,
+        productName: widget.productName,
+      );
+    }
 
     // Crear el URI de mailto
+    final encodedSubject = Uri.encodeComponent(subjectText);
+    final encodedBody = Uri.encodeComponent(body);
     final emailUri = Uri.parse(
-      'mailto:$companyEmail?subject=$subject&body=$encodedBody',
+      'mailto:$companyEmail?subject=$encodedSubject&body=$encodedBody',
     );
 
     try {
@@ -344,6 +411,84 @@ class _ContactFormViewState extends State<ContactFormView> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Preview de la firma del usuario
+                  Consumer<ProfileViewModel>(
+                    builder: (context, profileVm, child) {
+                      final userProfile = profileVm.userProfile;
+                      final currentUser = FirebaseAuth.instance.currentUser;
+
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: theme.colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.person_outline,
+                                  size: 18,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Tu firma en el correo:',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Atte.,',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            if (userProfile != null &&
+                                userProfile.name.isNotEmpty)
+                              Text(
+                                userProfile.name,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )
+                            else if (currentUser?.displayName != null &&
+                                currentUser!.displayName!.isNotEmpty)
+                              Text(
+                                currentUser.displayName!,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            if (userProfile?.position != null &&
+                                userProfile!.position!.isNotEmpty)
+                              Text(
+                                userProfile.position!,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            if (userProfile?.company != null &&
+                                userProfile!.company!.isNotEmpty)
+                              Text(
+                                userProfile.company!,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
                   // Info adicional
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -363,7 +508,7 @@ class _ContactFormViewState extends State<ContactFormView> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Se abrirá tu aplicación de correo (Mail, Gmail, Outlook) con el mensaje pre-llenado para enviar a la empresa.',
+                            'Se abrirá tu aplicación de correo con el mensaje pre-llenado.',
                             style: theme.textTheme.bodySmall,
                           ),
                         ),

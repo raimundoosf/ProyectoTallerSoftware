@@ -6,6 +6,7 @@ import 'package:flutter_app/src/features/home/presentation/views/home_screen.dar
 import 'package:flutter_app/src/features/products/presentation/views/new_product_view.dart';
 import 'package:flutter_app/src/features/user_profile/presentation/views/profile_screen.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_view.dart';
+import 'package:flutter_app/src/features/contact/presentation/views/contact_history_view.dart';
 import 'package:flutter_app/src/features/home/presentation/viewmodels/home_viewmodel.dart';
 
 /// Widget que envuelve el contenido con la barra de navegación inferior.
@@ -63,7 +64,7 @@ class _MainScaffoldWithChildState extends State<MainScaffoldWithChild> {
   int _getCurrentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     if (location == '/') return 0;
-    if (location == '/publish') return 1;
+    if (location == '/publish' || location == '/contacts') return 1;
     if (location == '/profile') return 2;
     return 0; // Default para otras rutas (companies, etc.)
   }
@@ -88,7 +89,12 @@ class _MainScaffoldWithChildState extends State<MainScaffoldWithChild> {
               context.go('/');
               break;
             case 1:
-              context.go('/publish');
+              // Usuario Empresa va a Publicar, Usuario Consumidor va a Mis Contactos
+              if (_userRole == 'Empresa') {
+                context.go('/publish');
+              } else {
+                context.go('/contacts');
+              }
               break;
             case 2:
               context.go('/profile');
@@ -108,12 +114,12 @@ class _MainScaffoldWithChildState extends State<MainScaffoldWithChild> {
             icon: Icon(
               _userRole == 'Empresa'
                   ? Icons.add_circle_outline
-                  : Icons.post_add_outlined,
+                  : Icons.mail_outline,
             ),
             activeIcon: Icon(
-              _userRole == 'Empresa' ? Icons.add_circle : Icons.post_add,
+              _userRole == 'Empresa' ? Icons.add_circle : Icons.mail,
             ),
-            label: 'Publicar',
+            label: _userRole == 'Empresa' ? 'Publicar' : 'Contactos',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
@@ -148,11 +154,8 @@ class MainScaffoldContent extends StatelessWidget {
                 onPublishSuccess: () => context.go('/profile'),
               );
             } else {
-              return const Center(
-                child: Text(
-                  'Función de crear publicación no disponible para usuarios',
-                ),
-              );
+              // Usuario Consumidor ve el historial de contactos
+              return const ContactHistoryView();
             }
           case 2:
             if (userRole == 'Empresa') {
