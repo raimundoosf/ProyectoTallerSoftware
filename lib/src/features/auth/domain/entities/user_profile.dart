@@ -10,6 +10,8 @@ class UserProfile with _$UserProfile {
     required List<String> interests,
     String? location,
     String? photoUrl,
+    String? company,
+    String? position,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

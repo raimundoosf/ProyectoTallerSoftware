@@ -206,6 +206,8 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
                     setState(() => _isEditing = true);
                   } else if (value == 'new_product') {
                     context.go('/products/new');
+                  } else if (value == 'logout') {
+                    _showLogoutDialog(context);
                   }
                 },
                 itemBuilder: (context) => [
@@ -226,6 +228,16 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
                         Icon(Icons.add_circle_outline),
                         SizedBox(width: 12),
                         Text('Nueva publicación'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout_rounded),
+                        SizedBox(width: 12),
+                        Text('Cerrar sesión'),
                       ],
                     ),
                   ),
@@ -1250,7 +1262,7 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
 
           DropdownButtonFormField<String>(
             key: ValueKey('coverage-${viewModel.coverageLevel}'),
-            value: viewModel.coverageLevel,
+            initialValue: viewModel.coverageLevel,
             decoration: const InputDecoration(
               labelText: 'Nivel de Cobertura',
               prefixIcon: Icon(Icons.map_outlined),
@@ -1414,6 +1426,36 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
       return FileImage(file);
     }
     return null;
+  }
+
+  Future<void> _showLogoutDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text('¿Estás seguro que deseas cerrar sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        context.go('/login');
+      }
+    }
   }
 }
 

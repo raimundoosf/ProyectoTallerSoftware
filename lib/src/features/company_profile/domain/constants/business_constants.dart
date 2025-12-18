@@ -1,30 +1,25 @@
 /// Constantes relacionadas con el perfil de empresas
 class BusinessConstants {
-  // Industrias con categorías más específicas
+  // Industrias alineadas con modelo B2B de sostenibilidad corporativa
+  // Categorías relevantes para compradores corporativos buscando proveedores sustentables
   static const List<String> industries = [
-    'Tecnología y Software',
-    'Desarrollo Web y Móvil',
-    'Diseño y Creatividad',
-    'Marketing Digital',
-    'Consultoría Empresarial',
-    'Servicios Profesionales',
-    'Construcción y Arquitectura',
-    'Salud y Bienestar',
-    'Educación y Capacitación',
-    'Turismo y Hotelería',
-    'Gastronomía y Alimentación',
-    'Comercio y Retail',
-    'Logística y Transporte',
-    'Agricultura y Ganadería',
-    'Energía y Medio Ambiente',
-    'Finanzas y Seguros',
-    'Inmobiliaria',
     'Manufactura e Industria',
-    'Eventos y Entertainment',
-    'Servicios del Hogar',
-    'Belleza y Cuidado Personal',
-    'Deportes y Fitness',
-    'Otra',
+    'Construcción y Arquitectura',
+    'Logística y Transporte',
+    'Energía y Medio Ambiente',
+    'Tecnología y Software',
+    'Consultoría Empresarial',
+    'Agricultura y Ganadería',
+    'Alimentación y Bebidas',
+    'Textil y Confección',
+    'Química y Farmacéutica',
+    'Minería y Metalurgia',
+    'Papel y Celulosa',
+    'Plásticos y Empaques',
+    'Servicios Profesionales',
+    'Comercio y Distribución',
+    'Gestión de Residuos',
+    'Otros',
   ];
 
   // Niveles de cobertura

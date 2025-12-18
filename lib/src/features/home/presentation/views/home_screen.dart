@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/home/presentation/viewmodels/home_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/views/products_list_view.dart';
@@ -113,20 +112,6 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
-            actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: IconButton(
-                  icon: const Icon(Icons.logout_rounded),
-                  tooltip: 'Cerrar Sesión',
-                  onPressed: () {
-                    viewModel.signOut().then((_) {
-                      if (context.mounted) context.go('/login');
-                    });
-                  },
-                ),
-              ),
-            ],
           ),
           body: currentUser == null
               ? const Center(child: CircularProgressIndicator())

@@ -26,6 +26,8 @@ class ProfileViewModel extends ChangeNotifier {
   String photoUrl = '';
   List<String> interests = [];
   String? location;
+  String? company;
+  String? position;
 
   final Map<String, String?> _fieldErrors = {};
   Map<String, String?> get fieldErrors => _fieldErrors;
@@ -60,6 +62,8 @@ class ProfileViewModel extends ChangeNotifier {
     photoUrl = '';
     interests = [];
     location = null;
+    company = null;
+    position = null;
     _fieldErrors.clear();
     _error = null;
     notifyListeners();
@@ -70,6 +74,8 @@ class ProfileViewModel extends ChangeNotifier {
     photoUrl = profile.photoUrl ?? '';
     interests = List<String>.from(profile.interests);
     location = profile.location;
+    company = profile.company;
+    position = profile.position;
     _fieldErrors.clear();
     notifyListeners();
   }
@@ -96,6 +102,18 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setCompany(String? v) {
+    company = v;
+    _fieldErrors.remove('company');
+    notifyListeners();
+  }
+
+  void setPosition(String? v) {
+    position = v;
+    _fieldErrors.remove('position');
+    notifyListeners();
+  }
+
   bool validateForm() {
     _fieldErrors.clear();
     if (name.isEmpty) {
@@ -119,6 +137,8 @@ class ProfileViewModel extends ChangeNotifier {
       interests: interests,
       location: location,
       photoUrl: photoUrl.isNotEmpty ? photoUrl : _userProfile?.photoUrl,
+      company: company,
+      position: position,
     );
 
     _isLoading = true;

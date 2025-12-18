@@ -25,6 +25,8 @@ mixin _$UserProfile {
   List<String> get interests => throw _privateConstructorUsedError;
   String? get location => throw _privateConstructorUsedError;
   String? get photoUrl => throw _privateConstructorUsedError;
+  String? get company => throw _privateConstructorUsedError;
+  String? get position => throw _privateConstructorUsedError;
 
   /// Serializes this UserProfile to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,6 +50,8 @@ abstract class $UserProfileCopyWith<$Res> {
     List<String> interests,
     String? location,
     String? photoUrl,
+    String? company,
+    String? position,
   });
 }
 
@@ -70,6 +74,8 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? interests = null,
     Object? location = freezed,
     Object? photoUrl = freezed,
+    Object? company = freezed,
+    Object? position = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -88,6 +94,14 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
             photoUrl: freezed == photoUrl
                 ? _value.photoUrl
                 : photoUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            company: freezed == company
+                ? _value.company
+                : company // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            position: freezed == position
+                ? _value.position
+                : position // ignore: cast_nullable_to_non_nullable
                       as String?,
           )
           as $Val,
@@ -109,6 +123,8 @@ abstract class _$$UserProfileImplCopyWith<$Res>
     List<String> interests,
     String? location,
     String? photoUrl,
+    String? company,
+    String? position,
   });
 }
 
@@ -130,6 +146,8 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? interests = null,
     Object? location = freezed,
     Object? photoUrl = freezed,
+    Object? company = freezed,
+    Object? position = freezed,
   }) {
     return _then(
       _$UserProfileImpl(
@@ -149,6 +167,14 @@ class __$$UserProfileImplCopyWithImpl<$Res>
             ? _value.photoUrl
             : photoUrl // ignore: cast_nullable_to_non_nullable
                   as String?,
+        company: freezed == company
+            ? _value.company
+            : company // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        position: freezed == position
+            ? _value.position
+            : position // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -162,6 +188,8 @@ class _$UserProfileImpl implements _UserProfile {
     required final List<String> interests,
     this.location,
     this.photoUrl,
+    this.company,
+    this.position,
   }) : _interests = interests;
 
   factory _$UserProfileImpl.fromJson(Map<String, dynamic> json) =>
@@ -181,10 +209,14 @@ class _$UserProfileImpl implements _UserProfile {
   final String? location;
   @override
   final String? photoUrl;
+  @override
+  final String? company;
+  @override
+  final String? position;
 
   @override
   String toString() {
-    return 'UserProfile(name: $name, interests: $interests, location: $location, photoUrl: $photoUrl)';
+    return 'UserProfile(name: $name, interests: $interests, location: $location, photoUrl: $photoUrl, company: $company, position: $position)';
   }
 
   @override
@@ -200,7 +232,10 @@ class _$UserProfileImpl implements _UserProfile {
             (identical(other.location, location) ||
                 other.location == location) &&
             (identical(other.photoUrl, photoUrl) ||
-                other.photoUrl == photoUrl));
+                other.photoUrl == photoUrl) &&
+            (identical(other.company, company) || other.company == company) &&
+            (identical(other.position, position) ||
+                other.position == position));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -211,6 +246,8 @@ class _$UserProfileImpl implements _UserProfile {
     const DeepCollectionEquality().hash(_interests),
     location,
     photoUrl,
+    company,
+    position,
   );
 
   /// Create a copy of UserProfile
@@ -233,6 +270,8 @@ abstract class _UserProfile implements UserProfile {
     required final List<String> interests,
     final String? location,
     final String? photoUrl,
+    final String? company,
+    final String? position,
   }) = _$UserProfileImpl;
 
   factory _UserProfile.fromJson(Map<String, dynamic> json) =
@@ -246,6 +285,10 @@ abstract class _UserProfile implements UserProfile {
   String? get location;
   @override
   String? get photoUrl;
+  @override
+  String? get company;
+  @override
+  String? get position;
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.

@@ -4,9 +4,28 @@ import 'package:flutter_app/src/features/auth/presentation/views/login_screen.da
 import 'package:flutter_app/src/features/auth/presentation/views/register_screen.dart';
 import 'package:flutter_app/src/features/home/presentation/views/main_scaffold.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/views/company_profile_view.dart';
+import 'package:flutter_app/src/features/onboarding/presentation/views/onboarding_screen.dart';
+import 'package:flutter_app/src/features/splash/presentation/views/splash_screen.dart';
 
 final GoRouter router = GoRouter(
+  initialLocation: '/splash',
   routes: <RouteBase>[
+    // Splash screen (inicial)
+    GoRoute(
+      path: '/splash',
+      builder: (BuildContext context, GoRouterState state) {
+        return const SplashScreen();
+      },
+    ),
+
+    // Onboarding (primera vez)
+    GoRoute(
+      path: '/onboarding',
+      builder: (BuildContext context, GoRouterState state) {
+        return const OnboardingScreen();
+      },
+    ),
+
     // Rutas sin barra de navegación (login/registro)
     GoRoute(
       path: '/login',
