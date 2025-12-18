@@ -52,6 +52,26 @@ service cloud.firestore {
         resource.data.companyId == request.auth.uid;
     }
 
+    // Mensajes de contacto
+    match /contact_messages/{messageId} {
+      // Crear: usuario autenticado puede enviar mensajes
+      allow create: if isAuthenticated() &&
+        request.resource.data.senderUserId == request.auth.uid;
+      
+      // Leer: solo el remitente o la empresa destinataria
+      allow read: if isAuthenticated() && (
+        resource.data.senderUserId == request.auth.uid ||
+        resource.data.recipientCompanyId == request.auth.uid
+      );
+      
+      // Actualizar: solo la empresa destinataria puede marcar como leído
+      allow update: if isAuthenticated() &&
+        resource.data.recipientCompanyId == request.auth.uid;
+      
+      // Eliminar: no permitido
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

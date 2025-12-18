@@ -52,6 +52,18 @@ final GoRouter router = GoRouter(
             return CompanyProfileView(companyId: companyId);
           },
         ),
+        GoRoute(
+          path: '/company-profile',
+          builder: (BuildContext context, GoRouterState state) {
+            // Obtener el ID del usuario actual
+            final userId = state.uri.queryParameters['userId'];
+            if (userId != null) {
+              return CompanyProfileView(companyId: userId);
+            }
+            // Si no hay userId, usar Firebase Auth
+            return const MainScaffoldContent(tabIndex: 2);
+          },
+        ),
       ],
     ),
   ],

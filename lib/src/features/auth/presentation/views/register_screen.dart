@@ -168,10 +168,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               if (!context.mounted) return;
 
                               if (success) {
-                                final destination = viewModel.role == 'Empresa'
-                                    ? '/company-profile'
-                                    : '/profile';
-                                context.go(destination);
+                                if (viewModel.role == 'Empresa') {
+                                  // Redirigir al perfil de la empresa propia
+                                  context.go('/profile');
+                                } else {
+                                  context.go('/profile');
+                                }
                               } else if (viewModel.error != null) {
                                 final bg = colorScheme.error;
                                 final fg = colorScheme.onError;

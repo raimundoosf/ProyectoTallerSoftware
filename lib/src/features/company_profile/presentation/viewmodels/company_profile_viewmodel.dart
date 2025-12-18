@@ -386,58 +386,68 @@ class CompanyProfileViewModel extends ChangeNotifier {
 
   bool validateForm() {
     _fieldErrors.clear();
-    if (companyName.isEmpty) {
+    if (companyName.trim().isEmpty) {
       _fieldErrors['companyName'] = 'Nombre de la empresa requerido';
     }
     if (industry == null || industry!.isEmpty) {
       _fieldErrors['industry'] = 'Seleccione una industria';
     }
+    if (companyDescription.trim().isEmpty) {
+      _fieldErrors['companyDescription'] = 'Descripción requerida';
+    }
     if (email.isNotEmpty && !_isValidEmail(email)) {
       _fieldErrors['email'] = 'Email inválido';
     }
     if (rut.isNotEmpty && !_isValidRut(rut)) {
-      _fieldErrors['rut'] = 'RUT inválido';
+      _fieldErrors['rut'] = 'RUT inválido (formato: 12.345.678-9 o 12345678-9)';
     }
     notifyListeners();
     return _fieldErrors.isEmpty;
   }
 
   bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+    return RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,}$').hasMatch(email);
   }
 
   bool _isValidRut(String rut) {
-    // Validación básica de formato RUT chileno (ej: 12.345.678-9)
-    return RegExp(r'^\d{1,2}\.\d{3}\.\d{3}-[\dkK]$').hasMatch(rut);
+    // Validación flexible de formato RUT chileno
+    // Acepta: 12.345.678-9, 12345678-9, 1.234.567-K, etc.
+    final cleanRut = rut.replaceAll('.', '').replaceAll(' ', '');
+    return RegExp(r'^\d{7,8}-[\dkK]$').hasMatch(cleanRut);
   }
 
   Future<bool> saveFromForm() async {
-    if (!validateForm()) return false;
+    if (!validateForm()) {
+      _error = 'Por favor corrige los errores en el formulario';
+      notifyListeners();
+      return false;
+    }
+
     if (_currentUserId == null) {
-      _error = 'Usuario no autenticado';
+      _error = 'Usuario no autenticado. Por favor inicia sesión nuevamente.';
       notifyListeners();
       return false;
     }
 
     final profile = CompanyProfile(
-      companyName: companyName,
+      companyName: companyName.trim(),
       industry: industry ?? '',
-      companyDescription: companyDescription,
-      website: website,
+      companyDescription: companyDescription.trim(),
+      website: website.trim(),
       logoUrl: logoUrl,
       certifications: certifications,
       coverageLevel: coverageLevel,
       coverageRegions: coverageRegions,
       coverageCommunes: coverageCommunes,
-      email: email,
-      phone: phone,
-      address: address,
-      rut: rut,
+      email: email.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      rut: rut.trim(),
       foundedYear: foundedYear,
       employeeCount: employeeCount,
       specialties: specialties,
-      missionStatement: missionStatement,
-      visionStatement: visionStatement,
+      missionStatement: missionStatement.trim(),
+      visionStatement: visionStatement.trim(),
       socialMedia: socialMedia,
     );
 
@@ -463,9 +473,21 @@ class CompanyProfileViewModel extends ChangeNotifier {
       } else {
         _companyProfile = profile;
       }
+      _error = null;
       return true;
     } catch (e) {
-      _error = e.toString();
+      // Mejorar el mensaje de error
+      String errorMessage = 'Error al guardar el perfil';
+      if (e.toString().contains('permission-denied')) {
+        errorMessage = 'No tienes permisos para editar este perfil';
+      } else if (e.toString().contains('network')) {
+        errorMessage = 'Error de conexión. Verifica tu internet.';
+      } else if (e.toString().contains('FirebaseException')) {
+        errorMessage = 'Error del servidor: ${e.toString().split(':').last}';
+      } else {
+        errorMessage = 'Error: ${e.toString()}';
+      }
+      _error = errorMessage;
       return false;
     } finally {
       _isLoading = false;

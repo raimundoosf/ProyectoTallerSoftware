@@ -32,6 +32,12 @@ import 'package:flutter_app/src/features/products/presentation/viewmodels/produc
 // Companies list feature
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/companies_list_viewmodel.dart';
 
+// Contact feature
+import 'package:flutter_app/src/features/contact/data/repositories/contact_repository_impl.dart';
+import 'package:flutter_app/src/features/contact/domain/usecases/send_contact_message.dart';
+import 'package:flutter_app/src/features/contact/domain/usecases/get_received_messages.dart';
+import 'package:flutter_app/src/features/contact/presentation/viewmodels/contact_viewmodel.dart';
+
 List<SingleChildWidget> get providers {
   // Infrastructure
   final firebaseAuth = FirebaseAuth.instance;
@@ -48,6 +54,7 @@ List<SingleChildWidget> get providers {
     firestore,
     FirebaseStorage.instance,
   );
+  final contactRepository = ContactRepositoryImpl(firestore);
 
   // Use Cases
   final signIn = SignIn(authRepository);
@@ -59,6 +66,8 @@ List<SingleChildWidget> get providers {
   final saveUserProfile = SaveUserProfile(userProfileRepository);
   final getCompanyProfile = GetCompanyProfile(companyProfileRepository);
   final saveCompanyProfile = SaveCompanyProfile(companyProfileRepository);
+  final sendContactMessage = SendContactMessage(contactRepository);
+  final getReceivedMessages = GetReceivedMessages(contactRepository);
 
   // ViewModels
   return [
@@ -84,6 +93,10 @@ List<SingleChildWidget> get providers {
     // Companies list
     ChangeNotifierProvider(
       create: (_) => CompaniesListViewModel(companyProfileRepository),
+    ),
+    // Contact
+    ChangeNotifierProvider(
+      create: (_) => ContactViewModel(sendContactMessage, getReceivedMessages),
     ),
   ];
 }

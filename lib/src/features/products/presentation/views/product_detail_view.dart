@@ -5,6 +5,7 @@ import 'package:flutter_app/src/features/company_profile/presentation/views/comp
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
+import 'package:flutter_app/src/features/contact/presentation/views/contact_form_view.dart';
 
 class ProductDetailView extends StatefulWidget {
   final Product product;
@@ -820,14 +821,25 @@ class _ProductDetailViewState extends State<ProductDetailView> {
     return Consumer<CompanyProfileViewModel>(
       builder: (context, viewModel, child) {
         final company = viewModel.companyProfile;
-        if (company?.website == null || company!.website.isEmpty) {
+        if (company == null || company.email.isEmpty) {
           return const SizedBox.shrink();
         }
 
         return FloatingActionButton.extended(
-          onPressed: () => _launchURL(company.website),
-          icon: const Icon(Icons.language),
-          label: const Text('Visitar sitio web'),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ContactFormView(
+                  companyId: widget.product.companyId,
+                  companyName: company.companyName,
+                  productId: widget.product.id,
+                  productName: widget.product.name,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.email_outlined),
+          label: const Text('Contactar'),
         );
       },
     );
@@ -843,24 +855,6 @@ class _ProductDetailViewState extends State<ProductDetailView> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No se puede abrir el mapa')),
         );
-      }
-    }
-  }
-
-  Future<void> _launchURL(String url) async {
-    String finalUrl = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      finalUrl = 'https://$url';
-    }
-
-    final uri = Uri.parse(finalUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('No se puede abrir: $url')));
       }
     }
   }

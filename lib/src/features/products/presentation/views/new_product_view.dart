@@ -1507,7 +1507,7 @@ class _NewProductViewState extends State<NewProductView> {
       if (widget.onPublishSuccess != null) {
         widget.onPublishSuccess!();
       } else {
-        context.go('/company-profile');
+        context.go('/profile');
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

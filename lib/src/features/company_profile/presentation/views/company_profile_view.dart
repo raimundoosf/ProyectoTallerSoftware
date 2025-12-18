@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_app/src/features/company_profile/domain/constants/business_constants.dart';
 import 'package:flutter_app/src/features/company_profile/presentation/viewmodels/company_profile_viewmodel.dart';
 import 'package:flutter_app/src/features/products/presentation/views/company_products_list_view.dart';
+import 'package:flutter_app/src/features/contact/presentation/views/contact_form_view.dart';
 
 /// Vista unificada del perfil de empresa
 /// Muestra el perfil de cualquier empresa con opciones de edición cuando es el perfil propio
@@ -229,6 +230,30 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
                     ),
                   ),
                 ],
+              ),
+            ]
+          : !_isOwner && profile != null && profile.email.isNotEmpty
+          ? [
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.email_outlined, size: 20),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ContactFormView(
+                        companyId: widget.companyId,
+                        companyName: profile.companyName,
+                      ),
+                    ),
+                  );
+                },
+                tooltip: 'Contactar empresa',
               ),
             ]
           : null,
@@ -979,11 +1004,14 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
     BuildContext context,
     CompanyProfileViewModel viewModel,
   ) {
+    final theme = Theme.of(context);
+
     return Form(
       key: _formKey,
       child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // Logo
           Center(
             child: Stack(
               children: [
@@ -1033,24 +1061,37 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
               ),
               child: LinearProgressIndicator(value: viewModel.uploadProgress),
             ),
+          const SizedBox(height: 24),
+
+          // Sección: Información Básica
+          Text(
+            'Información Básica',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
           const SizedBox(height: 16),
+
           TextFormField(
             controller: _companyNameController,
             decoration: InputDecoration(
-              labelText: 'Nombre de la Empresa',
+              labelText: 'Nombre de la Empresa *',
               prefixIcon: const Icon(Icons.business_outlined),
               errorText: viewModel.fieldErrors['companyName'],
             ),
             onChanged: (v) => viewModel.companyName = v,
           ),
           const SizedBox(height: 16),
+
           DropdownButtonFormField<String>(
             key: ValueKey('industry-${viewModel.industry}'),
             initialValue: viewModel.industry,
-            decoration: const InputDecoration(
-              labelText: 'Industria / Rubro',
-              prefixIcon: Icon(Icons.business_center_outlined),
+            decoration: InputDecoration(
+              labelText: 'Industria / Rubro *',
+              prefixIcon: const Icon(Icons.business_center_outlined),
               helperText: 'Selecciona la industria principal de tu empresa',
+              errorText: viewModel.fieldErrors['industry'],
             ),
             items: BusinessConstants.industries
                 .map(
@@ -1063,90 +1104,299 @@ class _CompanyProfileViewState extends State<CompanyProfileView>
             onChanged: (String? newValue) {
               viewModel.setIndustry(newValue);
             },
-            validator: (value) => value == null ? 'Campo requerido' : null,
           ),
           const SizedBox(height: 16),
+
           TextFormField(
             controller: _companyDescriptionController,
             decoration: InputDecoration(
-              labelText: 'Descripción',
+              labelText: 'Descripción *',
               prefixIcon: const Icon(Icons.description_outlined),
               errorText: viewModel.fieldErrors['companyDescription'],
+              helperText: 'Describe tu empresa y sus servicios',
             ),
             maxLines: 3,
             onChanged: (v) => viewModel.companyDescription = v,
           ),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: () async {
-              final vm = context.read<CompanyProfileViewModel>();
-              final messenger = ScaffoldMessenger.of(context);
-              final colorScheme = Theme.of(context).colorScheme;
+          const SizedBox(height: 16),
 
-              final success = await vm.saveFromForm();
-              if (!mounted) return;
-              if (success) {
-                setState(() => _isEditing = false);
-                messenger.showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 12.0,
-                    ),
-                    backgroundColor: colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    content: Row(
-                      children: [
-                        Icon(
-                          Icons.check_circle_outline,
-                          color: colorScheme.onPrimary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Perfil de empresa actualizado con éxito',
-                            style: TextStyle(color: colorScheme.onPrimary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              } else {
-                final error = vm.error;
-                if (error != null) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      behavior: SnackBarBehavior.floating,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 12.0,
-                      ),
-                      backgroundColor: colorScheme.error,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      content: Row(
-                        children: [
-                          Icon(Icons.error_outline, color: colorScheme.onError),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              error,
-                              style: TextStyle(color: colorScheme.onError),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
+          TextFormField(
+            controller: _websiteController,
+            decoration: const InputDecoration(
+              labelText: 'Sitio Web',
+              prefixIcon: Icon(Icons.language_outlined),
+              helperText: 'URL de tu sitio web (opcional)',
+            ),
+            onChanged: (v) => viewModel.website = v,
+            keyboardType: TextInputType.url,
+          ),
+
+          const SizedBox(height: 32),
+
+          // Sección: Información de Contacto
+          Text(
+            'Información de Contacto',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.email,
+            decoration: InputDecoration(
+              labelText: 'Correo Electrónico',
+              prefixIcon: const Icon(Icons.email_outlined),
+              helperText: 'Email de contacto para clientes',
+              errorText: viewModel.fieldErrors['email'],
+            ),
+            onChanged: (v) => viewModel.email = v,
+            keyboardType: TextInputType.emailAddress,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.phone,
+            decoration: const InputDecoration(
+              labelText: 'Teléfono',
+              prefixIcon: Icon(Icons.phone_outlined),
+              helperText: 'Número de contacto',
+            ),
+            onChanged: (v) => viewModel.phone = v,
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.address,
+            decoration: const InputDecoration(
+              labelText: 'Dirección',
+              prefixIcon: Icon(Icons.location_on_outlined),
+              helperText: 'Dirección física de la empresa',
+            ),
+            onChanged: (v) => viewModel.address = v,
+            maxLines: 2,
+          ),
+
+          const SizedBox(height: 32),
+
+          // Sección: Detalles Adicionales
+          Text(
+            'Detalles Adicionales',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.rut,
+            decoration: InputDecoration(
+              labelText: 'RUT',
+              prefixIcon: const Icon(Icons.badge_outlined),
+              helperText: 'RUT de la empresa (formato: 12.345.678-9)',
+              errorText: viewModel.fieldErrors['rut'],
+            ),
+            onChanged: (v) => viewModel.rut = v,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.foundedYear > 0
+                ? viewModel.foundedYear.toString()
+                : '',
+            decoration: const InputDecoration(
+              labelText: 'Año de Fundación',
+              prefixIcon: Icon(Icons.calendar_today_outlined),
+              helperText: 'Año en que se fundó la empresa',
+            ),
+            onChanged: (v) {
+              final year = int.tryParse(v);
+              if (year != null) viewModel.foundedYear = year;
+            },
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.employeeCount > 0
+                ? viewModel.employeeCount.toString()
+                : '',
+            decoration: const InputDecoration(
+              labelText: 'Número de Empleados',
+              prefixIcon: Icon(Icons.people_outlined),
+              helperText: 'Cantidad aproximada de empleados',
+            ),
+            onChanged: (v) {
+              final count = int.tryParse(v);
+              if (count != null) viewModel.employeeCount = count;
+            },
+            keyboardType: TextInputType.number,
+          ),
+
+          const SizedBox(height: 32),
+
+          // Sección: Cobertura Geográfica
+          Text(
+            'Cobertura Geográfica',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          DropdownButtonFormField<String>(
+            key: ValueKey('coverage-${viewModel.coverageLevel}'),
+            value: viewModel.coverageLevel,
+            decoration: const InputDecoration(
+              labelText: 'Nivel de Cobertura',
+              prefixIcon: Icon(Icons.map_outlined),
+              helperText: 'Alcance geográfico de tus servicios',
+            ),
+            items: const [
+              DropdownMenuItem(value: 'Nacional', child: Text('Nacional')),
+              DropdownMenuItem(value: 'Regional', child: Text('Regional')),
+              DropdownMenuItem(value: 'Comunal', child: Text('Comunal')),
+            ],
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                viewModel.setCoverageLevel(newValue);
               }
             },
-            child: const Text('Guardar Cambios'),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Sección: Misión y Visión
+          Text(
+            'Misión y Visión',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.missionStatement,
+            decoration: const InputDecoration(
+              labelText: 'Misión',
+              prefixIcon: Icon(Icons.flag_outlined),
+              helperText: '¿Cuál es el propósito de tu empresa?',
+            ),
+            maxLines: 3,
+            onChanged: (v) => viewModel.missionStatement = v,
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            initialValue: viewModel.visionStatement,
+            decoration: const InputDecoration(
+              labelText: 'Visión',
+              prefixIcon: Icon(Icons.visibility_outlined),
+              helperText: '¿Hacia dónde va tu empresa?',
+            ),
+            maxLines: 3,
+            onChanged: (v) => viewModel.visionStatement = v,
+          ),
+
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: viewModel.isLoading
+                  ? null
+                  : () async {
+                      final vm = context.read<CompanyProfileViewModel>();
+                      final messenger = ScaffoldMessenger.of(context);
+                      final colorScheme = Theme.of(context).colorScheme;
+
+                      final success = await vm.saveFromForm();
+                      if (!mounted) return;
+                      if (success) {
+                        setState(() => _isEditing = false);
+                        messenger.showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
+                            ),
+                            backgroundColor: colorScheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            content: Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle_outline,
+                                  color: colorScheme.onPrimary,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Perfil de empresa actualizado con éxito',
+                                    style: TextStyle(
+                                      color: colorScheme.onPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      } else {
+                        final error =
+                            vm.error ?? 'Error al guardar los cambios';
+                        messenger.showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 12.0,
+                            ),
+                            backgroundColor: colorScheme.error,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            content: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: colorScheme.onError,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    error,
+                                    style: TextStyle(
+                                      color: colorScheme.onError,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: viewModel.isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Guardar Cambios'),
+            ),
           ),
         ],
       ),
