@@ -108,22 +108,6 @@ class _NewProductViewState extends State<NewProductView> {
         onPressed: () => _handleCancel(context, vm),
         tooltip: 'Cancelar',
       ),
-      actions: [
-        if (!vm.isEditing)
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: TextButton.icon(
-              onPressed: vm.isLoading
-                  ? null
-                  : () => _handlePublish(context, vm),
-              icon: const Icon(Icons.publish, size: 18),
-              label: const Text('Publicar'),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
-      ],
       elevation: 0,
       scrolledUnderElevation: 2,
     );
@@ -301,7 +285,7 @@ class _NewProductViewState extends State<NewProductView> {
           label: 'Nombre',
           hint: vm.isService
               ? 'ej: Reparación de electrodomésticos'
-              : 'ej: Lavadora eco-friendly',
+              : 'ej: Paneles solares',
           icon: Icons.badge_outlined,
           error: vm.fieldErrors['name'],
           onChanged: (v) => vm.name = v,
@@ -311,7 +295,7 @@ class _NewProductViewState extends State<NewProductView> {
         _buildTextField(
           initialValue: vm.description,
           label: 'Descripción',
-          hint: 'Describe los detalles y beneficios sostenibles',
+          hint: 'Describe los detalles y beneficios',
           icon: Icons.notes_rounded,
           error: vm.fieldErrors['description'],
           onChanged: (v) => vm.description = v,
@@ -594,7 +578,125 @@ class _NewProductViewState extends State<NewProductView> {
             (context as Element).markNeedsBuild();
           },
         ),
+        const SizedBox(height: 16),
+        _buildDropdown<String>(
+          value: vm.salesUnit.isEmpty ? null : vm.salesUnit,
+          label: 'Unidad de venta',
+          hint: 'Unidad',
+          icon: Icons.straighten_rounded,
+          items: salesUnits
+              .map((unit) => DropdownMenuItem(value: unit, child: Text(unit)))
+              .toList(),
+          onChanged: (v) {
+            vm.salesUnit = v ?? 'Unidad';
+            (context as Element).markNeedsBuild();
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildDropdown<int>(
+          value: vm.minimumOrderQuantity,
+          label: 'Pedido mínimo',
+          hint: '1',
+          icon: Icons.shopping_cart_outlined,
+          items: minimumOrderQuantities
+              .map((qty) => DropdownMenuItem(value: qty, child: Text('$qty')))
+              .toList(),
+          onChanged: (v) {
+            vm.minimumOrderQuantity = v ?? 1;
+            (context as Element).markNeedsBuild();
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildDropdown<String>(
+          value: vm.deliveryTime.isEmpty ? null : vm.deliveryTime,
+          label: 'Tiempo de entrega',
+          hint: 'Selecciona tiempo estimado',
+          icon: Icons.local_shipping_outlined,
+          items: deliveryTimes
+              .map((time) => DropdownMenuItem(value: time, child: Text(time)))
+              .toList(),
+          onChanged: (v) {
+            vm.deliveryTime = v ?? '';
+            (context as Element).markNeedsBuild();
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildCheckboxTile(
+          title: 'Precios por volumen disponibles',
+          subtitle: 'Ofrezco descuentos para pedidos grandes',
+          icon: Icons.trending_down,
+          value: vm.bulkPricing,
+          onChanged: (v) {
+            vm.bulkPricing = v ?? false;
+            (context as Element).markNeedsBuild();
+          },
+        ),
       ],
+    );
+  }
+
+  Widget _buildCheckboxTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+  }) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () => onChanged(!value),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: value
+              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.5)
+              : theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: value
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outlineVariant,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 22,
+              color: value
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: value
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Checkbox(value: value, onChanged: onChanged),
+          ],
+        ),
+      ),
     );
   }
 
@@ -602,14 +704,16 @@ class _NewProductViewState extends State<NewProductView> {
     switch (condition) {
       case 'Nuevo':
         return Icons.fiber_new_rounded;
-      case 'Como nuevo':
+      case 'Reacondicionado Certificado':
+        return Icons.verified_rounded;
+      case 'Usado - Excelente Estado':
         return Icons.star_rounded;
-      case 'Buen estado':
+      case 'Usado - Buen Estado':
         return Icons.thumb_up_rounded;
-      case 'Usado':
-        return Icons.history_rounded;
-      case 'Para reparar':
+      case 'Para Remanufactura':
         return Icons.build_rounded;
+      case 'Excedente de Inventario':
+        return Icons.inventory_2_outlined;
       default:
         return Icons.help_outline;
     }
@@ -623,15 +727,16 @@ class _NewProductViewState extends State<NewProductView> {
     switch (condition) {
       case 'Nuevo':
         return primary;
-      case 'Como nuevo':
-        // ignore: deprecated_member_use
-        return primary.withOpacity(0.8);
-      case 'Buen estado':
+      case 'Reacondicionado Certificado':
         return secondary;
-      case 'Usado':
+      case 'Usado - Excelente Estado':
+        return primary.withValues(alpha: 0.8);
+      case 'Usado - Buen Estado':
         return tertiary;
-      case 'Para reparar':
+      case 'Para Remanufactura':
         return outline;
+      case 'Excedente de Inventario':
+        return secondary;
       default:
         return outline;
     }
@@ -683,6 +788,14 @@ class _NewProductViewState extends State<NewProductView> {
   }
 
   Widget _buildServiceFields(NewProductViewModel vm) {
+    final contractTypes = [
+      'Por proyecto',
+      'Contrato de retainer',
+      'Por hora/día',
+      'Suscripción mensual',
+      'A convenir',
+    ];
+
     return _buildSection(
       icon: Icons.handyman_rounded,
       title: 'Detalles del Servicio',
@@ -747,20 +860,47 @@ class _NewProductViewState extends State<NewProductView> {
           onChanged: (v) => vm.serviceSchedule = v,
           maxLines: 2,
         ),
+        const SizedBox(height: 16),
+        _buildDropdown<String>(
+          value: vm.contractType.isEmpty ? null : vm.contractType,
+          label: 'Tipo de contratación',
+          hint: 'Selecciona el modelo',
+          icon: Icons.description_outlined,
+          items: contractTypes
+              .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+              .toList(),
+          onChanged: (v) {
+            vm.contractType = v ?? '';
+            (context as Element).markNeedsBuild();
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildCheckboxTile(
+          title: 'Soporte continuo disponible',
+          subtitle: 'Ofrezco mantenimiento o soporte post-servicio',
+          icon: Icons.support_agent,
+          value: vm.ongoingSupport,
+          onChanged: (v) {
+            vm.ongoingSupport = v ?? false;
+            (context as Element).markNeedsBuild();
+          },
+        ),
       ],
     );
   }
 
   IconData _getModalityIcon(String modality) {
     switch (modality) {
-      case 'Presencial':
+      case 'En sitio del cliente':
+        return Icons.business_center_rounded;
+      case 'En nuestras instalaciones':
         return Icons.storefront_rounded;
-      case 'A domicilio':
-        return Icons.home_rounded;
-      case 'Remoto':
+      case 'Remoto / Online':
         return Icons.computer_rounded;
       case 'Híbrido':
         return Icons.sync_alt_rounded;
+      case 'Proyecto llave en mano':
+        return Icons.key_rounded;
       default:
         return Icons.help_outline;
     }

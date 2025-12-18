@@ -33,12 +33,22 @@ class NewProductViewModel extends ChangeNotifier {
   String condition = '';
   int warrantyMonths = 0;
 
+  // Campos B2B para PRODUCTOS
+  int minimumOrderQuantity = 1;
+  String salesUnit = 'Unidad';
+  String deliveryTime = '';
+  bool bulkPricing = false;
+
   // Campos para SERVICIOS
   String serviceCategory = '';
   int serviceDurationMinutes = 0; // Almacenado en minutos
   String serviceModality = '';
   List<String> serviceCoverage = [];
   String serviceSchedule = '';
+
+  // Campos B2B para SERVICIOS
+  String contractType = '';
+  bool ongoingSupport = false;
 
   // Campos comunes
   List<String> tags = [];
@@ -192,12 +202,20 @@ class NewProductViewModel extends ChangeNotifier {
     productCategory = product.productCategory;
     condition = product.condition;
     warrantyMonths = product.warrantyMonths;
+    // B2B Productos
+    minimumOrderQuantity = product.minimumOrderQuantity;
+    salesUnit = product.salesUnit;
+    deliveryTime = product.deliveryTime;
+    bulkPricing = product.bulkPricing;
     // Servicios
     serviceCategory = product.serviceCategory;
     serviceDurationMinutes = product.serviceDurationMinutes;
     serviceModality = product.serviceModality;
     serviceCoverage = List.from(product.serviceCoverage);
     serviceSchedule = product.serviceSchedule;
+    // B2B Servicios
+    contractType = product.contractType;
+    ongoingSupport = product.ongoingSupport;
     // Comunes
     tags = List.from(product.tags);
     terms = product.terms;
@@ -267,12 +285,20 @@ class NewProductViewModel extends ChangeNotifier {
           productCategory: productCategory,
           condition: condition,
           warrantyMonths: warrantyMonths,
+          // B2B Productos
+          minimumOrderQuantity: minimumOrderQuantity,
+          salesUnit: salesUnit,
+          deliveryTime: deliveryTime,
+          bulkPricing: bulkPricing,
           // Servicios
           serviceCategory: serviceCategory,
           serviceDurationMinutes: serviceDurationMinutes,
           serviceModality: serviceModality,
           serviceCoverage: serviceCoverage,
           serviceSchedule: serviceSchedule,
+          // B2B Servicios
+          contractType: contractType,
+          ongoingSupport: ongoingSupport,
           // Comunes
           tags: tags,
           terms: terms,
@@ -304,12 +330,20 @@ class NewProductViewModel extends ChangeNotifier {
           productCategory: productCategory,
           condition: condition,
           warrantyMonths: warrantyMonths,
+          // B2B Productos
+          minimumOrderQuantity: minimumOrderQuantity,
+          salesUnit: salesUnit,
+          deliveryTime: deliveryTime,
+          bulkPricing: bulkPricing,
           // Servicios
           serviceCategory: serviceCategory,
           serviceDurationMinutes: serviceDurationMinutes,
           serviceModality: serviceModality,
           serviceCoverage: serviceCoverage,
           serviceSchedule: serviceSchedule,
+          // B2B Servicios
+          contractType: contractType,
+          ongoingSupport: ongoingSupport,
           // Comunes
           tags: tags,
           terms: terms,
@@ -347,12 +381,20 @@ class NewProductViewModel extends ChangeNotifier {
     productCategory = '';
     condition = '';
     warrantyMonths = 0;
+    // B2B Productos
+    minimumOrderQuantity = 1;
+    salesUnit = 'Unidad';
+    deliveryTime = '';
+    bulkPricing = false;
     // Servicios
     serviceCategory = '';
     serviceDurationMinutes = 0;
     serviceModality = '';
     serviceCoverage = [];
     serviceSchedule = '';
+    // B2B Servicios
+    contractType = '';
+    ongoingSupport = false;
     // Comunes
     tags = [];
     terms = '';

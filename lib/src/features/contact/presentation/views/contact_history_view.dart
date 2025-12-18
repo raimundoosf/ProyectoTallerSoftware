@@ -76,8 +76,26 @@ class ContactHistoryView extends StatelessWidget {
           docs.sort((a, b) {
             final aData = a.data() as Map<String, dynamic>;
             final bData = b.data() as Map<String, dynamic>;
-            final aTime = aData['createdAt'] as Timestamp?;
-            final bTime = bData['createdAt'] as Timestamp?;
+
+            // Manejar createdAt que puede ser Timestamp o String
+            DateTime? aTime;
+            DateTime? bTime;
+
+            final aCreatedAt = aData['createdAt'];
+            final bCreatedAt = bData['createdAt'];
+
+            if (aCreatedAt is Timestamp) {
+              aTime = aCreatedAt.toDate();
+            } else if (aCreatedAt is String) {
+              aTime = DateTime.tryParse(aCreatedAt);
+            }
+
+            if (bCreatedAt is Timestamp) {
+              bTime = bCreatedAt.toDate();
+            } else if (bCreatedAt is String) {
+              bTime = DateTime.tryParse(bCreatedAt);
+            }
+
             if (aTime == null && bTime == null) return 0;
             if (aTime == null) return 1;
             if (bTime == null) return -1;

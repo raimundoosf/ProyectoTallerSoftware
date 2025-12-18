@@ -16,12 +16,22 @@ class Product {
   final String condition; // Nuevo, Usado, Reacondicionado
   final int warrantyMonths; // Garantía en meses (0 = sin garantía)
 
+  // Campos B2B para PRODUCTOS
+  final int minimumOrderQuantity; // Cantidad mínima de pedido
+  final String salesUnit; // Unidad de venta (unidad, caja, pallet, etc.)
+  final String deliveryTime; // Tiempo de entrega estimado
+  final bool bulkPricing; // Precios por volumen disponibles
+
   // Campos para SERVICIOS
   final String serviceCategory;
   final int serviceDurationMinutes; // Duración en minutos
   final String serviceModality; // Presencial, Online, A domicilio
   final List<String> serviceCoverage; // Regiones/comunas
   final String serviceSchedule; // Horarios disponibles
+
+  // Campos B2B para SERVICIOS
+  final String contractType; // Por proyecto, Retainer, Por hora
+  final bool ongoingSupport; // Soporte continuo disponible
 
   // Campos comunes
   final List<String> tags;
@@ -43,12 +53,20 @@ class Product {
     this.productCategory = '',
     this.condition = '',
     this.warrantyMonths = 0,
+    // B2B Productos
+    this.minimumOrderQuantity = 1,
+    this.salesUnit = 'Unidad',
+    this.deliveryTime = '',
+    this.bulkPricing = false,
     // Servicios
     this.serviceCategory = '',
     this.serviceDurationMinutes = 0,
     this.serviceModality = '',
     this.serviceCoverage = const [],
     this.serviceSchedule = '',
+    // B2B Servicios
+    this.contractType = '',
+    this.ongoingSupport = false,
     // Comunes
     this.tags = const [],
     this.terms = '',
@@ -70,12 +88,20 @@ class Product {
       'productCategory': productCategory,
       'condition': condition,
       'warrantyMonths': warrantyMonths,
+      // B2B Productos
+      'minimumOrderQuantity': minimumOrderQuantity,
+      'salesUnit': salesUnit,
+      'deliveryTime': deliveryTime,
+      'bulkPricing': bulkPricing,
       // Servicios
       'serviceCategory': serviceCategory,
       'serviceDurationMinutes': serviceDurationMinutes,
       'serviceModality': serviceModality,
       'serviceCoverage': serviceCoverage,
       'serviceSchedule': serviceSchedule,
+      // B2B Servicios
+      'contractType': contractType,
+      'ongoingSupport': ongoingSupport,
       // Comunes
       'tags': tags,
       'terms': terms,
@@ -102,12 +128,20 @@ class Product {
       productCategory: map['productCategory'] ?? '',
       condition: map['condition'] ?? '',
       warrantyMonths: map['warrantyMonths'] ?? 0,
+      // B2B Productos
+      minimumOrderQuantity: map['minimumOrderQuantity'] ?? 1,
+      salesUnit: map['salesUnit'] ?? 'Unidad',
+      deliveryTime: map['deliveryTime'] ?? '',
+      bulkPricing: map['bulkPricing'] ?? false,
       // Servicios
       serviceCategory: map['serviceCategory'] ?? '',
       serviceDurationMinutes: map['serviceDurationMinutes'] ?? 0,
       serviceModality: map['serviceModality'] ?? '',
       serviceCoverage: List<String>.from(map['serviceCoverage'] ?? []),
       serviceSchedule: map['serviceSchedule'] ?? '',
+      // B2B Servicios
+      contractType: map['contractType'] ?? '',
+      ongoingSupport: map['ongoingSupport'] ?? false,
       // Comunes
       tags: List<String>.from(map['tags'] ?? []),
       terms: map['terms'] ?? '',

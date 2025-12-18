@@ -150,11 +150,6 @@ class _ContactFormViewState extends State<ContactFormView> {
     final subjectText = vm.subject;
     String body = vm.message;
 
-    // Agregar información del producto si existe
-    if (widget.productName != null) {
-      body = 'Consulta sobre: ${widget.productName}\n\n$body';
-    }
-
     // Agregar la firma del usuario comprador
     body = '$body${_buildUserSignature()}';
 

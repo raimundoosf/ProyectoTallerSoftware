@@ -1,51 +1,85 @@
-/// Categorías de productos
+/// Categorías de productos B2B - Sostenibilidad empresarial
 const List<String> productCategories = [
-  'Electrónica',
-  'Electrodomésticos',
-  'Muebles',
-  'Ropa y Textiles',
-  'Alimentos',
-  'Belleza y Cuidado Personal',
-  'Deportes',
-  'Juguetes',
-  'Libros y Material Educativo',
-  'Herramientas',
-  'Construcción',
-  'Automotriz',
+  'Maquinaria Industrial',
+  'Equipos de Producción',
+  'Materiales de Construcción',
+  'Insumos Industriales',
+  'Tecnología y Equipos IT',
+  'Mobiliario Corporativo',
+  'Embalaje y Packaging',
+  'Productos Químicos',
+  'Materias Primas',
+  'Repuestos y Componentes',
+  'Equipos de Seguridad',
+  'Vehículos y Transporte',
+  'Equipos de Energía',
+  'Productos Reciclados',
   'Otro',
 ];
 
-/// Categorías de servicios
+/// Categorías de servicios B2B - Sostenibilidad empresarial
 const List<String> serviceCategories = [
-  'Reparación',
-  'Instalación',
-  'Mantenimiento',
-  'Limpieza',
-  'Consultoría',
-  'Educación',
-  'Transporte',
-  'Belleza y Bienestar',
-  'Construcción y Renovación',
-  'Tecnología',
-  'Diseño',
+  'Consultoría Ambiental',
+  'Certificaciones ISO',
+  'Auditoría de Sostenibilidad',
+  'Gestión de Residuos',
+  'Eficiencia Energética',
+  'Economía Circular',
+  'Capacitación Empresarial',
+  'Mantenimiento Industrial',
+  'Logística Verde',
+  'Reciclaje Industrial',
+  'Tratamiento de Aguas',
+  'Ingeniería Ambiental',
+  'Reporting ESG',
   'Otro',
 ];
 
-/// Estados del producto
+/// Estados del producto B2B
 const List<String> productConditions = [
   'Nuevo',
-  'Usado - Como nuevo',
-  'Usado - Buen estado',
-  'Usado - Estado aceptable',
-  'Reacondicionado',
+  'Reacondicionado Certificado',
+  'Usado - Excelente Estado',
+  'Usado - Buen Estado',
+  'Para Remanufactura',
+  'Excedente de Inventario',
 ];
 
-/// Modalidades de servicio
+/// Modalidades de servicio B2B
 const List<String> serviceModalities = [
-  'Presencial',
-  'Online',
-  'A domicilio',
+  'En sitio del cliente',
+  'En nuestras instalaciones',
+  'Remoto / Online',
   'Híbrido',
+  'Proyecto llave en mano',
+];
+
+/// Unidades de venta B2B
+const List<String> salesUnits = [
+  'Unidad',
+  'Par',
+  'Docena',
+  'Caja',
+  'Pallet',
+  'Tonelada',
+  'Kilogramo',
+  'Litro',
+  'Metro',
+  'Metro cuadrado',
+  'Metro cúbico',
+  'Rollo',
+  'Lote',
+];
+
+/// Tiempo de entrega estimado
+const List<String> deliveryTimes = [
+  'Inmediato (Stock disponible)',
+  '1-3 días hábiles',
+  '4-7 días hábiles',
+  '1-2 semanas',
+  '2-4 semanas',
+  'Más de 1 mes',
+  'A coordinar',
 ];
 
 /// Regiones de Chile para cobertura
@@ -68,15 +102,24 @@ const List<String> chileanRegions = [
   'Magallanes',
 ];
 
-/// Tags comunes para productos/servicios sostenibles
+/// Tags comunes para productos/servicios B2B sostenibles
 const List<String> commonTags = [
-  'Reciclado',
-  'Eco-friendly',
-  'Segunda Mano',
+  'ISO 14001',
+  'ISO 9001',
+  'Economía Circular',
+  'Huella de Carbono Reducida',
+  'Material Reciclado',
+  'Eficiencia Energética',
   'Producción Local',
-  'Orgánico',
-  'Reutilizable',
+  'Comercio Justo',
+  'Biodegradable',
+  'Certificación Ambiental',
+  'Zero Waste',
+  'Energía Renovable',
 ];
 
 /// Duraciones de garantía en meses
 const List<int> warrantyMonths = [3, 6, 12, 18, 24, 36, 48, 60];
+
+/// Cantidades mínimas de pedido B2B
+const List<int> minimumOrderQuantities = [1, 5, 10, 25, 50, 100, 500, 1000];
